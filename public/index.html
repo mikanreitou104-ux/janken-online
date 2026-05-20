@@ -188,7 +188,46 @@
     }
 
     .powerFill {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      text-shadow: 0 0 6px rgba(0,0,0,0.8);
       background: linear-gradient(90deg,#fde047,#f97316);
+    }
+
+    .curseLimit {
+      animation: cursePulse 1s infinite;
+      box-shadow: 0 0 20px #a855f7;
+      background: linear-gradient(90deg,#6b21a8,#a855f7,#ec4899) !important;
+    }
+
+    @keyframes cursePulse {
+      0% {
+        filter: brightness(1);
+        transform: scaleY(1);
+      }
+
+      50% {
+        filter: brightness(1.4);
+        transform: scaleY(1.08);
+      }
+
+      100% {
+        filter: brightness(1);
+        transform: scaleY(1);
+      }
+    }
+
+    .curseWarning {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #f0abfc;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(192,38,211,0.8);
+      animation: cursePulse 1s infinite;
     }
 
     .kakuhen {
@@ -387,8 +426,8 @@
   </style>
 </head>
 <body>
-  <div class="guideBox" id="guideBox">
-    <button class="guideToggle" onclick="toggleGuideBox()" id="guideToggleBtn">✖</button>
+  <div class="guideBox guideClosed" id="guideBox">
+    <button class="guideToggle" onclick="toggleGuideBox()" id="guideToggleBtn">📖</button>
 
     <div class="guideContent">
     <div class="guideTitle">📖 属性早見表</div>
@@ -484,16 +523,34 @@
       </div>
     </div>
 
-    <div class="guideItem">
-      ✋ パー<br>
-      2ダメージ + パワー+1
+    <div class="guideSection">
+      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">🕯️ 呪術</div>
+      <div class="guideSectionBody">
+        <div class="guideItem">
+          グー: 7ダメージ<br>
+          グー使用で3ターン相手のパワー獲得封印<br>
+          パワー3でグー使用時:<br>
+          パワーを3消費し、<br>
+          次ターン相手のパー封印<br>
+          発動後は最大パワー2
+        </div>
+      </div>
     </div>
+        <div class="guideSection">
+      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">✋✌️ 基本技</div>
+      <div class="guideSectionBody">
+        <div class="guideItem">
+          ✋ パー<br>
+          2ダメージ + パワー+1
+        </div>
 
-    <div class="guideItem">
-      ✌️ チョキ<br>
-      4ダメージ
+        <div class="guideItem">
+          ✌️ チョキ<br>
+          4ダメージ
+        </div>
+      </div>
     </div>
-  </div>
+    </div>
   </div>
 
   <div class="container">
@@ -518,11 +575,26 @@
       🎰 OFF
     </button>
 
+    <button
+      class="jackpotToggle"
+      onclick="toggleMaxPowerMode()"
+      id="maxPowerButton"
+      style="bottom:72px;"
+    >
+      ⚡ MAX OFF
+    </button>
+
     <div id="onlineScreen" style="display:none;">
       <div id="waitingRoom" style="display:none;text-align:center;margin-bottom:20px;">
         <h2>🌐 マッチング待機中...</h2>
         <div id="waitingRoomText" style="font-size:20px;opacity:0.85;margin-top:16px;">
           プレイヤーを待っています...
+        </div>
+
+        <div class="buttons" style="margin-top:20px;">
+          <button id="startBattleButton" onclick="startOnlineBattle()" style="display:none;">
+            ⚔️ 対戦開始
+          </button>
         </div>
       </div>
       <h2>🌐 オンライン対戦</h2>
@@ -557,6 +629,7 @@
         <button onclick="selectElement('thunder')">⚡ 雷</button>
         <button onclick="selectElement('fighter')">🥊 格闘家</button>
         <button onclick="selectElement('gambler')">🎲 ギャンブラー</button>
+        <button onclick="selectElement('curse')">🕯️ 呪術</button>
       </div>
     </div>
 
@@ -598,6 +671,11 @@
             <div class="fill powerFill" id="cpuPowerBar"></div>
           </div>
         </div>
+      </div>
+
+      <div class="buttons" id="cursePowerControls" style="display:none;">
+        <button onclick="setCursePowerMode(2)" id="curse2Btn">🕯️ 呪術2消費</button>
+        <button onclick="setCursePowerMode(3)" id="curse3Btn" class="selectedHand">☠️ 呪術3消費</button>
       </div>
 
       <div class="buttons">
@@ -680,6 +758,7 @@
     const hands = ["✊","✌️","✋"];
 
     let onlineMode = false;
+    let isRoomHost = false;
     let roomCode = "";
     let playerName = "PLAYER";
     let enemyName = "対戦相手";
@@ -690,6 +769,7 @@
     let friendHand2 = null;
     let selectedFriendHand = null;
     let jackpotMode = false;
+    let maxPowerMode = false;
     let playerKakuhen = false;
     let cpuKakuhen = false;
     const elementNames = {
@@ -698,7 +778,8 @@
       earth:"🪨 土",
       thunder:"⚡ 雷",
       fighter:"🥊 格闘家",
-      gambler:"🎲 ギャンブラー"
+      gambler:"🎲 ギャンブラー",
+      curse:"🕯️ 呪術"
     };
 
     let playerElement = "";
@@ -731,7 +812,22 @@
     let cpuEarthShield = 0;
 
     let playerEarthBoost = 0;
+
+    let playerCurseTurns = 0;
+    let cpuCurseTurns = 0;
+
+    let playerSealPar = false;
+    let cpuSealPar = false;
+
+    let playerSealTurns = 0;
+    let cpuSealTurns = 0;
+
+    let playerCurseMaxPower = 3;
+    let cpuCurseMaxPower = 3;
     let cpuEarthBoost = 0;
+
+    let playerCursePowerMode = 3;
+    let cpuCursePowerMode = 3;
 
     function toggleGuideSection(header){
       header.parentElement.classList.toggle("open");
@@ -746,6 +842,58 @@
       btn.innerHTML = box.classList.contains("guideClosed")
         ? "📖"
         : "✖";
+    }
+
+    function toggleMaxPowerMode(){
+      maxPowerMode = !maxPowerMode;
+
+      if(maxPowerMode){
+        playerPower = playerElement === "fighter"
+          ? 4
+          : playerElement === "curse"
+            ? playerCurseMaxPower
+            : 3;
+
+        cpuPower = cpuElement === "fighter"
+          ? 4
+          : cpuElement === "curse"
+            ? cpuCurseMaxPower
+            : 3;
+        updateUI();
+      }
+
+      document.getElementById("maxPowerButton").innerHTML = maxPowerMode
+        ? "⚡ MAX ON"
+        : "⚡ MAX OFF";
+    }
+
+    function setCursePowerMode(mode){
+      if(gameMode === "friend"){
+        if(friendTurn === 1){
+          playerCursePowerMode = mode;
+        }
+        else {
+          cpuCursePowerMode = mode;
+        }
+      }
+      else {
+        playerCursePowerMode = mode;
+      }
+
+      const curse2Btn = document.getElementById("curse2Btn");
+      const curse3Btn = document.getElementById("curse3Btn");
+
+      curse2Btn.classList.remove("selectedHand");
+      curse3Btn.classList.remove("selectedHand");
+
+      document.getElementById(mode === 2 ? "curse2Btn" : "curse3Btn")
+        .classList.add("selectedHand");
+
+      // 友達対戦では相手に選択を見せない
+      if(gameMode !== "friend"){
+        document.getElementById("result").innerHTML =
+          `🕯️ 呪術 ${mode} 消費モード選択中`;
+      }
     }
 
     function toggleJackpotMode(){
@@ -781,6 +929,8 @@
       roomCode = code;
       gameMode = "online";
 
+      isRoomHost = true;
+
       if(socket){
         socket.emit("joinRoom", {
           roomCode,
@@ -814,6 +964,8 @@
       roomCode = code;
       gameMode = "online";
 
+      isRoomHost = false;
+
       if(socket){
         socket.emit("joinRoom", {
           roomCode,
@@ -829,6 +981,14 @@
 
       document.getElementById("waitingRoom").style.display = "block";
       document.getElementById("waitingRoomText").innerHTML = "ルームへ接続中...";
+    }
+
+    function startOnlineBattle(){
+      if(socket){
+        socket.emit("startBattle", {
+          roomCode
+        });
+      }
     }
 
     function selectMode(mode){
@@ -850,6 +1010,16 @@
         }
 
         document.getElementById("playerElement").innerHTML = elementNames[playerElement];
+
+        const showCurseControls =
+          (gameMode === "friend" && friendTurn === 1 && playerElement === "curse") ||
+          (gameMode === "friend" && friendTurn === 2 && friendElement2 === "curse") ||
+          (gameMode !== "friend" && playerElement === "curse");
+
+        document.getElementById("cursePowerControls").style.display =
+          showCurseControls
+            ? "flex"
+            : "none";
         document.getElementById("result").innerHTML = "相手の属性選択待ち...";
 
         // 相手の属性が既に届いていたら即開始
@@ -875,6 +1045,11 @@
         else {
           friendElement2 = element;
           cpuElement = friendElement2;
+
+          document.getElementById("cursePowerControls").style.display =
+            friendElement2 === "curse"
+              ? "flex"
+              : "none";
         }
       }
       else {
@@ -884,6 +1059,19 @@
 
       document.getElementById("playerElement").innerHTML = elementNames[playerElement];
       document.getElementById("cpuElement").innerHTML = elementNames[cpuElement];
+
+      if(gameMode === "friend"){
+        document.getElementById("cursePowerControls").style.display =
+          playerElement === "curse"
+            ? "flex"
+            : "none";
+      }
+      else {
+        document.getElementById("cursePowerControls").style.display =
+          playerElement === "curse"
+            ? "flex"
+            : "none";
+      }
 
       document.getElementById("elementScreen").style.display = "none";
       document.getElementById("gameScreen").style.display = "block";
@@ -917,14 +1105,36 @@
       document.getElementById("playerHPBar").style.width = `${playerHP/30*100}%`;
       document.getElementById("cpuHPBar").style.width = `${cpuHP/30*100}%`;
 
-      const playerMaxPower = playerElement === "fighter" ? 4 : 3;
-      const cpuMaxPower = cpuElement === "fighter" ? 4 : 3;
+      const playerMaxPower = playerElement === "fighter"
+        ? 4
+        : playerElement === "curse"
+          ? playerCurseMaxPower
+          : 3;
+      const cpuMaxPower = cpuElement === "fighter"
+        ? 4
+        : cpuElement === "curse"
+          ? cpuCurseMaxPower
+          : 3;
 
       document.getElementById("playerPowerBar").style.width = `${playerPower/playerMaxPower*100}%`;
       document.getElementById("cpuPowerBar").style.width = `${cpuPower/cpuMaxPower*100}%`;
 
       document.getElementById("playerPowerBar").innerHTML = `${playerPower}/${playerMaxPower}`;
+
+      if(playerElement === "curse" && playerCurseMaxPower === 2){
+        document.getElementById("playerPowerBar").classList.add("curseLimit");
+      }
+      else {
+        document.getElementById("playerPowerBar").classList.remove("curseLimit");
+      }
       document.getElementById("cpuPowerBar").innerHTML = `${cpuPower}/${cpuMaxPower}`;
+
+      if(cpuElement === "curse" && cpuCurseMaxPower === 2){
+        document.getElementById("cpuPowerBar").classList.add("curseLimit");
+      }
+      else {
+        document.getElementById("cpuPowerBar").classList.remove("curseLimit");
+      }
 
       if(playerKakuhen){
         document.getElementById("playerHPBar").classList.add("kakuhen");
@@ -957,7 +1167,13 @@
         playerElement === "fire"
           ? `${playerHP <= 5 ? "🔥🔥 バースト" : "🔥"} グー+${playerFireBoost}`
           :
-        "効果なし";
+        playerElement === "curse"
+          ? `🕯️ 呪 ${cpuCurseTurns}T ${playerSealPar ? "| ✋封印" : ""}
+             ${playerCurseMaxPower === 2 ? '<div class="curseWarning">⚠️ 最大パワーが2に低下</div>' : ''}`
+          : cpuElement === "curse"
+          ? `🕯️ 呪 ${playerCurseTurns}T ${cpuSealPar ? "| ✋封印" : ""}
+             ${cpuCurseMaxPower === 2 ? '<div class="curseWarning">⚠️ 最大パワーが2に低下</div>' : ''}`
+          : "効果なし";
       document.getElementById("cpuEffect").innerHTML =
         cpuElement === "earth"
           ? `🪨 攻+${cpuEarthBoost} 防-${cpuEarthShield}`
@@ -981,7 +1197,9 @@
           ? 1
           : element === "gambler"
             ? power
-            : 2;
+            : element === "curse"
+              ? 0
+              : 2;
 
         if(power >= gooCost){
 
@@ -1057,6 +1275,43 @@
           }
           if(element === "fighter") {
             damage = 7;
+          }
+
+          if(element === "curse") {
+            damage = 7;
+
+            const curseCost = isPlayer
+              ? playerCursePowerMode
+              : cpuCursePowerMode;
+
+            if(power >= curseCost && curseCost === 3){
+              newPower -= 3;
+
+              if(isPlayer){
+                playerCurseMaxPower = 2;
+                playerPower = Math.min(playerPower,2);
+              }
+              else {
+                cpuCurseMaxPower = 2;
+                cpuPower = Math.min(cpuPower,2);
+              }
+
+              if(isPlayer){
+                cpuSealPar = true;
+                cpuSealTurns = 2;
+              }
+              else {
+                playerSealPar = true;
+                playerSealTurns = 2;
+              }
+            }
+
+            if(isPlayer){
+              cpuCurseTurns = curseCost === 2 ? 2 : 3;
+            }
+            else {
+              playerCurseTurns = curseCost === 2 ? 2 : 3;
+            }
           }
 
           if(element === "gambler") {
@@ -1157,10 +1412,34 @@
         if(element === "earth"){
           damage += isPlayer ? playerEarthBoost : cpuEarthBoost;
         }
-        const maxPower = element === "fighter" ? 4 : 3;
+        const maxPower = element === "fighter"
+          ? 4
+          : element === "curse"
+            ? (isPlayer ? playerCurseMaxPower : cpuCurseMaxPower)
+            : 3;
         const gain = element === "fighter" ? 2 : 1;
 
-        newPower = Math.min(newPower + gain,maxPower);
+        const sealed = isPlayer
+          ? playerSealPar
+          : cpuSealPar;
+
+        if(sealed){
+          damage = 0;
+          return {
+            damage,
+            power:newPower,
+            earth:newEarth,
+            thunder:newThunder
+          };
+        }
+
+        const cursed = isPlayer
+          ? playerCurseTurns > 0
+          : cpuCurseTurns > 0;
+
+        if(!cursed){
+          newPower = Math.min(newPower + gain,maxPower);
+        }
       }
 
       if(element === "water" && hand === 0 && power >= 2){
@@ -1184,6 +1463,19 @@
     }
 
     function selectHand(hand,button){
+      // パー封印チェック
+      if(hand === 2){
+        const sealed = gameMode === "friend"
+          ? (friendTurn === 1 ? playerSealPar : cpuSealPar)
+          : gameMode === "online"
+            ? playerSealPar
+            : playerSealPar;
+
+        if(sealed){
+          document.getElementById("result").innerHTML = "🕯️ パーが封印されている！";
+          return;
+        }
+      }
       selectedFriendHand = hand;
 
       document.querySelectorAll('.handButton').forEach(btn=>{
@@ -1204,6 +1496,14 @@
     function confirmHand(){
       if(selectedFriendHand === null) return;
 
+      if(gameMode === "online" && onlineHandLocked){
+        return;
+      }
+
+      if(gameMode === "online"){
+        onlineHandLocked = true;
+      }
+
       play(selectedFriendHand);
 
       selectedFriendHand = null;
@@ -1215,6 +1515,7 @@
     }
 
     let onlineSelectedHand = null;
+    let onlineHandLocked = false;
     let enemyOnlineHand = null;
 
     async function play(playerHand){
@@ -1236,6 +1537,8 @@
             document.getElementById("result").innerHTML = "相手の手待ち...";
             return;
           }
+
+          onlineHandLocked = false;
         }
 
         // 両者の手が揃った
@@ -1244,13 +1547,44 @@
 
         onlineSelectedHand = null;
         enemyOnlineHand = null;
+        onlineHandLocked = false;
       }
 
       if(gameMode === "friend"){
 
+        const currentElement = friendTurn === 1
+          ? playerElement
+          : friendElement2;
+
+        document.getElementById("cursePowerControls").style.display =
+          currentElement === "curse"
+            ? "flex"
+            : "none";
+
+        // ターンごとに自分専用の選択状態を表示
+        document.getElementById("curse2Btn").classList.remove("selectedHand");
+        document.getElementById("curse3Btn").classList.remove("selectedHand");
+
+        const currentCurseMode = friendTurn === 1
+          ? playerCursePowerMode
+          : cpuCursePowerMode;
+
+        // 相手に前回設定を見せない
+
         if(friendTurn === 1){
           friendHand1 = playerHand;
           friendTurn = 2;
+
+          document.getElementById("curse2Btn").classList.remove("selectedHand");
+          document.getElementById("curse3Btn").classList.remove("selectedHand");
+
+          document.getElementById(cpuCursePowerMode === 2 ? "curse2Btn" : "curse3Btn")
+            .classList.add("selectedHand");
+
+          document.getElementById("cursePowerControls").style.display =
+            friendElement2 === "curse"
+              ? "flex"
+              : "none";
 
           document.getElementById("result").innerHTML = `
             PLAYER1 OK！<br>
@@ -1333,6 +1667,31 @@
         resultText = "YOU LOSE";
       }
 
+      if(playerCurseTurns > 0){
+        playerCurseTurns -= 1;
+      }
+
+      if(cpuCurseTurns > 0){
+        cpuCurseTurns -= 1;
+      }
+
+      // パー封印ターン処理
+      if(playerSealTurns > 0){
+        playerSealTurns -= 1;
+
+        if(playerSealTurns <= 0){
+          playerSealPar = false;
+        }
+      }
+
+      if(cpuSealTurns > 0){
+        cpuSealTurns -= 1;
+
+        if(cpuSealTurns <= 0){
+          cpuSealPar = false;
+        }
+      }
+
       playerHP = Math.max(playerHP,0);
       cpuHP = Math.max(cpuHP,0);
 
@@ -1401,7 +1760,9 @@
           <br><br>☠️ GAME OVER
           <br><br>
           
-          <button onclick="returnToModeSelect()">ゲームモード選択へ戻る</button>
+          <button onclick="${gameMode === 'online' ? 'returnToWaitingRoom()' : 'resetGame()'}">
+            ${gameMode === 'online' ? '待合室へ戻る' : 'もう一度遊ぶ'}
+          </button>
         `;
       }
 
@@ -1410,7 +1771,9 @@
           <br><br>🏆 YOU WIN
           <br><br>
           
-          <button onclick="returnToModeSelect()">ゲームモード選択へ戻る</button>
+          <button onclick="${gameMode === 'online' ? 'returnToWaitingRoom()' : 'resetGame()'}">
+            ${gameMode === 'online' ? '待合室へ戻る' : 'もう一度遊ぶ'}
+          </button>
         `;
       }
 
@@ -1421,8 +1784,21 @@
       playerHP = 30;
       cpuHP = 30;
 
-      playerPower = 0;
-      cpuPower = 0;
+      playerPower = maxPowerMode
+        ? (playerElement === "fighter"
+            ? 4
+            : playerElement === "curse"
+              ? playerCurseMaxPower
+              : 3)
+        : 0;
+
+      cpuPower = maxPowerMode
+        ? (cpuElement === "fighter"
+            ? 4
+            : cpuElement === "curse"
+              ? cpuCurseMaxPower
+              : 3)
+        : 0;
 
       playerEarth = false;
       cpuEarth = false;
@@ -1445,8 +1821,23 @@
       playerKakuhen = false;
       cpuKakuhen = false;
 
+      playerSealPar = false;
+      cpuSealPar = false;
+
+      playerSealTurns = 0;
+      cpuSealTurns = 0;
+
+      playerCurseMaxPower = 3;
+      cpuCurseMaxPower = 3;
+
+      playerCursePowerMode = 3;
+      cpuCursePowerMode = 3;
+
       playerElement = "";
-      cpuElement = ["fire","water","earth","thunder"][Math.floor(Math.random()*4)];
+
+      if(gameMode !== "online"){
+        cpuElement = ["fire","water","earth","thunder"][Math.floor(Math.random()*4)];
+      }
 
       document.getElementById("elementScreen").style.display = "block";
       document.getElementById("gameScreen").style.display = "none";
@@ -1475,11 +1866,22 @@
       updateUI();
     }
 
-    function returnToModeSelect(){
+    function returnToWaitingRoom(){
       resetGame();
 
+      document.getElementById("gameScreen").style.display = "none";
       document.getElementById("elementScreen").style.display = "none";
-      document.getElementById("modeScreen").style.display = "block";
+      document.getElementById("onlineScreen").style.display = "block";
+      document.getElementById("waitingRoom").style.display = "block";
+
+      document.getElementById("waitingRoomText").innerHTML = "対戦相手と待機中...";
+
+      if(isRoomHost){
+        document.getElementById("startBattleButton").style.display = "inline-block";
+      }
+      else {
+        document.getElementById("startBattleButton").style.display = "none";
+      }
     }
   </script>
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
@@ -1512,12 +1914,11 @@
           `;
 
           if(data.players >= 2){
-            document.getElementById("waitingRoomText").innerHTML = "対戦相手接続！ 属性を選択してください";
+            document.getElementById("waitingRoomText").innerHTML = "対戦相手接続！";
 
-            setTimeout(()=>{
-              document.getElementById("onlineScreen").style.display = "none";
-              document.getElementById("elementScreen").style.display = "block";
-            },1000);
+            if(isRoomHost){
+              document.getElementById("startBattleButton").style.display = "inline-block";
+            }
           }
         });
 
@@ -1534,10 +1935,20 @@
           }
         });
 
+        socket.on("battleStart",()=>{
+          resetGame();
+
+          document.getElementById("onlineScreen").style.display = "none";
+          document.getElementById("waitingRoom").style.display = "none";
+          document.getElementById("elementScreen").style.display = "block";
+        });
+
         socket.on("enemySelected",(data)=>{
           enemyOnlineHand = data.hand;
 
           document.getElementById("result").innerHTML = "相手の手入力完了！";
+
+          document.getElementById("okButton").style.display = "none";
 
           if(onlineSelectedHand !== null && enemyOnlineHand !== null){
             play(onlineSelectedHand);
