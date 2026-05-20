@@ -1946,11 +1946,22 @@
           playerElement = "";
           cpuElement = "";
 
-          resetGame();
+          playerHP = 30;
+          cpuHP = 30;
 
+          playerPower = 0;
+          cpuPower = 0;
+
+          document.getElementById("modeScreen").style.display = "none";
           document.getElementById("onlineScreen").style.display = "none";
           document.getElementById("waitingRoom").style.display = "none";
+          document.getElementById("gameScreen").style.display = "none";
           document.getElementById("elementScreen").style.display = "block";
+
+          document.getElementById("elementSelectTitle").innerHTML = "属性を選択";
+          document.getElementById("result").innerHTML = "属性を選択してください";
+
+          updateUI();
         });
 
         socket.on("enemySelected",(data)=>{
