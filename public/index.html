@@ -18,6 +18,8 @@
     }
 
     .guideBox {
+      transition: 0.25s;
+      z-index: 2000;
       position: fixed;
       left: 16px;
       top: 16px;
@@ -34,6 +36,59 @@
       font-size: 18px;
       font-weight: bold;
       margin-bottom: 10px;
+    }
+
+    .guideToggle {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      border: none;
+      border-radius: 999px;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      font-size: 18px;
+    }
+
+    .guideClosed {
+      width: 56px;
+      height: 56px;
+      overflow: hidden;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .guideClosed .guideContent {
+      display: none;
+    }
+
+    .guideSection {
+      margin-bottom: 12px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .guideSectionHeader {
+      padding: 10px 12px;
+      cursor: pointer;
+      font-weight: bold;
+      background: rgba(255,255,255,0.08);
+      user-select: none;
+    }
+
+    .guideSectionBody {
+      padding: 10px 12px;
+      display: none;
+      line-height: 1.7;
+    }
+
+    .guideSection.open .guideSectionBody {
+      display: block;
     }
 
     .guideItem {
@@ -332,57 +387,101 @@
   </style>
 </head>
 <body>
-  <div class="guideBox">
+  <div class="guideBox" id="guideBox">
+    <button class="guideToggle" onclick="toggleGuideBox()" id="guideToggleBtn">✖</button>
+
+    <div class="guideContent">
     <div class="guideTitle">📖 属性早見表</div>
 
-    <div class="guideItem">
-      🔥 炎<br>
-      グー: 8ダメージ<br>
-      使用毎に+1<br>
-      HP5以下でバーストモード
+    <div class="guideSection open">
+      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">📘 ルール説明</div>
+      <div class="guideSectionBody">
+        <div class="guideItem">
+          ✊✌️✋ のじゃんけんで戦う対戦ゲーム。<br>
+          勝利すると相手へダメージ。<br><br>
+
+          ✊ グー：高火力（パワー消費）<br>
+          ✌️ チョキ：通常攻撃<br>
+          ✋ パー：低火力＋パワー増加<br><br>
+
+          属性ごとに特殊能力あり。<br>
+          HPを0にしたら勝利。
+        </div>
+      </div>
     </div>
 
-    <div class="guideItem">
-      💧 水<br>
-      グー: 8ダメージ<br>
-      あいこでパワー+1<br>
-      HP8以下なら+4回復
-      それ以外は+2回復
+    <div class="guideSection">
+      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">🔥 炎</div>
+      <div class="guideSectionBody">
+        <div class="guideItem">
+          グー: 8ダメージ<br>
+          使用毎に+1<br>
+          HP5以下でバーストモード
+        </div>
+      </div>
     </div>
 
-    <div class="guideItem">
-      🪨 土<br>
-      グー: 8ダメージ<br>
-      1回: 被ダメ-1<br>
-      2回: 被ダメ-2<br>
-      3回: 永続+2<br>
-      以降2回毎に永続+2
+    <div class="guideSection">
+      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">💧 水</div>
+      <div class="guideSectionBody">
+        <div class="guideItem">
+          グー: 8ダメージ<br>
+          あいこでパワー+1<br>
+          HP8以下なら+4回復<br>
+          それ以外は+2回復
+        </div>
+      </div>
     </div>
 
-    <div class="guideItem">
-      ⚡ 雷<br>
-      グー: 4ダメージ<br>
-      次回グー: 20ダメージ<br>
-      強化中チョキ+3<br>
-      チョキ3回で解除
+    <div class="guideSection">
+      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">🪨 土</div>
+      <div class="guideSectionBody">
+        <div class="guideItem">
+          グー: 8ダメージ<br>
+          1回: 被ダメ-1<br>
+          2回: 被ダメ-2<br>
+          3回: 永続+2<br>
+          以降2回毎に永続+2
+        </div>
+      </div>
     </div>
 
-    <div class="guideItem">
-      🥊 格闘家<br>
-      グー: 7ダメージ<br>
-      グー消費1<br>
-      パーでパワー+2<br>
-      最大パワー4
+    <div class="guideSection">
+      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">⚡ 雷</div>
+      <div class="guideSectionBody">
+        <div class="guideItem">
+          グー: 4ダメージ<br>
+          次回グー: 20ダメージ<br>
+          強化中チョキ+3<br>
+          チョキ3回で解除
+        </div>
+      </div>
     </div>
 
-    <div class="guideItem">
-      🎲 ギャンブラー<br>
-      グーで全パワー消費<br>
-      P1: 1d3 (最大3)<br>
-      P2: 1d3+1d7 (最大10)<br>
-      P3: 1d3+1d7+5 (最大15)<br>
-      25分の1で確変突入<br>
-      確変: 88%で消費なし
+    <div class="guideSection">
+      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">🥊 格闘家</div>
+      <div class="guideSectionBody">
+        <div class="guideItem">
+          グー: 7ダメージ<br>
+          グー消費1<br>
+          パーでパワー+2<br>
+          最大パワー4
+        </div>
+      </div>
+    </div>
+
+    <div class="guideSection">
+      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">🎲 ギャンブラー</div>
+      <div class="guideSectionBody">
+        <div class="guideItem">
+          グーで全パワー消費<br>
+          P1: 1d3 (最大3)<br>
+          P2: 1d3+1d7 (最大10)<br>
+          P3: 1d3+1d7+5 (最大15)<br>
+          25分の1で確変突入<br>
+          確変: 88%で消費なし
+        </div>
+      </div>
     </div>
 
     <div class="guideItem">
@@ -395,6 +494,8 @@
       4ダメージ
     </div>
   </div>
+  </div>
+
   <div class="container">
     <h1>✊ 属性じゃんけんバトル ✋</h1>
 
@@ -418,6 +519,12 @@
     </button>
 
     <div id="onlineScreen" style="display:none;">
+      <div id="waitingRoom" style="display:none;text-align:center;margin-bottom:20px;">
+        <h2>🌐 マッチング待機中...</h2>
+        <div id="waitingRoomText" style="font-size:20px;opacity:0.85;margin-top:16px;">
+          プレイヤーを待っています...
+        </div>
+      </div>
       <h2>🌐 オンライン対戦</h2>
 
       <div class="buttons" style="flex-direction:column;align-items:center;">
@@ -429,7 +536,6 @@
         <input
           id="playerNameInput"
           placeholder="名前を入力"
-          style="padding:14px;border-radius:12px;border:none;font-size:18px;width:260px;"
           style="padding:14px;border-radius:12px;border:none;font-size:18px;width:260px;"
         />
 
@@ -458,7 +564,7 @@
 
       <div class="statusRow">
         <div class="card">
-          <div class="label">PLAYER HP</div>
+          <div class="label" id="playerNameLabel">PLAYER HP</div>
           <div class="big" id="playerHPText">30</div>
           <div class="bar">
             <div class="fill" id="playerHPBar"></div>
@@ -476,7 +582,7 @@
 
       <div class="statusRow">
         <div class="card">
-          <div class="label">PLAYER</div>
+          <div class="label" id="playerElementNameLabel">PLAYER</div>
           <div class="big" id="playerElement"></div>
           <div id="playerEffect">効果なし</div>
           <div class="bar">
@@ -627,6 +733,21 @@
     let playerEarthBoost = 0;
     let cpuEarthBoost = 0;
 
+    function toggleGuideSection(header){
+      header.parentElement.classList.toggle("open");
+    }
+
+    function toggleGuideBox(){
+      const box = document.getElementById("guideBox");
+      const btn = document.getElementById("guideToggleBtn");
+
+      box.classList.toggle("guideClosed");
+
+      btn.innerHTML = box.classList.contains("guideClosed")
+        ? "📖"
+        : "✖";
+    }
+
     function toggleJackpotMode(){
       jackpotMode = !jackpotMode;
 
@@ -647,6 +768,9 @@
     function createOnlineRoom(){
       const code = document.getElementById("roomCodeInput").value.trim();
       playerName = document.getElementById("playerNameInput").value.trim() || "PLAYER";
+
+      document.getElementById("playerNameLabel").innerHTML = `${playerName} HP`;
+      document.getElementById("playerElementNameLabel").innerHTML = playerName;
 
       if(!code){
         document.getElementById("onlineStatus").innerHTML = "合言葉を入力してください";
@@ -670,15 +794,16 @@
         ROOM: <b>${code}</b>
       `;
 
-      setTimeout(()=>{
-        document.getElementById("onlineScreen").style.display = "none";
-        document.getElementById("elementScreen").style.display = "block";
-      },1200);
+      document.getElementById("waitingRoom").style.display = "block";
+      document.getElementById("waitingRoomText").innerHTML = "対戦相手を待っています...";
     }
 
     function joinOnlineRoom(){
       const code = document.getElementById("roomCodeInput").value.trim();
       playerName = document.getElementById("playerNameInput").value.trim() || "PLAYER";
+
+      document.getElementById("playerNameLabel").innerHTML = `${playerName} HP`;
+      document.getElementById("playerElementNameLabel").innerHTML = playerName;
 
       if(!code){
         document.getElementById("onlineStatus").innerHTML = "合言葉を入力してください";
@@ -702,10 +827,8 @@
         ROOM: <b>${code}</b>
       `;
 
-      setTimeout(()=>{
-        document.getElementById("onlineScreen").style.display = "none";
-        document.getElementById("elementScreen").style.display = "block";
-      },1200);
+      document.getElementById("waitingRoom").style.display = "block";
+      document.getElementById("waitingRoomText").innerHTML = "ルームへ接続中...";
     }
 
     function selectMode(mode){
@@ -765,7 +888,7 @@
       document.getElementById("elementScreen").style.display = "none";
       document.getElementById("gameScreen").style.display = "block";
 
-      startBattleBGM();
+      // BGM停止中
 
       if(playerElement === "fire" && playerHP <= 5){
         let flames = "";
@@ -1277,7 +1400,7 @@
         document.getElementById("result").innerHTML += `
           <br><br>☠️ GAME OVER
           <br><br>
-          <button onclick="resetGame()">属性選択へ戻る</button>
+          
           <button onclick="returnToModeSelect()">ゲームモード選択へ戻る</button>
         `;
       }
@@ -1286,7 +1409,7 @@
         document.getElementById("result").innerHTML += `
           <br><br>🏆 YOU WIN
           <br><br>
-          <button onclick="resetGame()">属性選択へ戻る</button>
+          
           <button onclick="returnToModeSelect()">ゲームモード選択へ戻る</button>
         `;
       }
@@ -1328,7 +1451,7 @@
       document.getElementById("elementScreen").style.display = "block";
       document.getElementById("gameScreen").style.display = "none";
 
-      stopBattleBGM();
+      // BGM停止中
 
       document.getElementById("elementSelectTitle").innerHTML = gameMode === "friend"
         ? "PLAYER1 の属性を選択"
@@ -1387,6 +1510,15 @@
             🌐 接続成功<br>
             ROOM: ${data.room}
           `;
+
+          if(data.players >= 2){
+            document.getElementById("waitingRoomText").innerHTML = "対戦相手接続！ 属性を選択してください";
+
+            setTimeout(()=>{
+              document.getElementById("onlineScreen").style.display = "none";
+              document.getElementById("elementScreen").style.display = "block";
+            },1000);
+          }
         });
 
         socket.on("enemyElement",(data)=>{
