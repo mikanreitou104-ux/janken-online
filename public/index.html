@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>属性じゃんけんバトル</title>
+
+  <style>
+    body {
+      margin: 0;
+      background: #0f172a;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .guideBox {
+      position: fixed;
+      left: 16px;
+      top: 16px;
+      width: 220px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 16px;
+      font-size: 14px;
+      line-height: 1.7;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+
+    .guideTitle {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .guideItem {
+      margin-bottom: 10px;
+      opacity: 0.9;
+    }
+
+    .container {
+      width: 95%;
+      max-width: 700px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 24px;
+      padding: 24px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 0;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    button {
+      border: none;
+      padding: 16px 24px;
+      border-radius: 16px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .jackpotToggle {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 5000;
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: bold;
+      opacity: 0.82;
+      background: rgba(0,0,0,0.5);
+      color: white;
+    }
+
+    .selectedHand {
+      background: #3b82f6;
+      color: white;
+      transform: scale(1.08);
+      box-shadow: 0 0 20px rgba(59,130,246,0.8);
+    }
+
+    .statusRow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .label {
+      opacity: 0.7;
+      font-size: 14px;
+    }
+
+    .big {
+      font-size: 28px;
+      font-weight: bold;
+      margin-top: 6px;
+    }
+
+    .bar {
+      width: 100%;
+      height: 18px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .fill {
+      height: 100%;
+      width: 100%;
+      transition: 0.3s;
+      background: linear-gradient(90deg,#22c55e,#ef4444);
+    }
+
+    .powerFill {
+      background: linear-gradient(90deg,#fde047,#f97316);
+    }
+
+    .kakuhen {
+      animation: rainbowGlow 1.2s linear infinite;
+      box-shadow: 0 0 25px white;
+    }
+
+    @keyframes rainbowGlow {
+      0% { filter: hue-rotate(0deg) brightness(1.2); }
+      100% { filter: hue-rotate(360deg) brightness(1.4); }
+    }
+
+    .result {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 24px;
+      min-height: 100px;
+      line-height: 1.8;
+    }
+
+    .cutin {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 999;
+      font-size: 48px;
+      font-weight: bold;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .hands {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-top: 20px;
+      font-size: 64px;
+    }
+
+    .bigDamage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+      font-size: 160px;
+      font-weight: 900;
+      letter-spacing: 8px;
+      color: #facc15;
+      text-shadow:
+        0 0 10px #fff,
+        0 0 30px #fde047,
+        0 0 60px #f97316,
+        0 0 120px #ef4444,
+        0 0 220px #ffffff;
+      animation: megaHit 1.2s cubic-bezier(.17,.89,.32,1.49);
+      z-index: 3000;
+      transform-origin: center;
+    }
+
+    .impactFlash {
+      position: fixed;
+      inset: 0;
+      background: white;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 2500;
+      animation: flashBang 0.45s ease-out;
+    }
+
+    .shockwave {
+      position: fixed;
+      width: 120px;
+      height: 120px;
+      border: 12px solid rgba(255,255,255,0.9);
+      border-radius: 999px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      pointer-events: none;
+      z-index: 2600;
+      animation: shockwaveAnim 0.9s ease-out forwards;
+    }
+
+    @keyframes megaHit {
+      0% {
+        transform: scale(0.1) rotate(-15deg);
+        opacity: 0;
+        filter: blur(12px);
+      }
+
+      20% {
+        transform: scale(1.8) rotate(8deg);
+        opacity: 1;
+        filter: blur(0px);
+      }
+
+      40% {
+        transform: scale(1.2) rotate(-4deg);
+      }
+
+      70% {
+        transform: scale(1.5) rotate(2deg);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+    }
+
+    @keyframes flashBang {
+      0% {
+        opacity: 0.95;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    @keyframes shockwaveAnim {
+      0% {
+        transform: translate(-50%,-50%) scale(0.2);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate(-50%,-50%) scale(10);
+        opacity: 0;
+      }
+    }
+
+    .burstFlame {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      overflow: hidden;
+    }
+
+    .flame {
+      position: absolute;
+      bottom: -120px;
+      font-size: 120px;
+      opacity: 0.5;
+      animation: flameRise 2s linear infinite;
+      filter: blur(1px);
+    }
+
+    @keyframes flameRise {
+      0% {
+        transform: translateY(0) scale(0.8);
+        opacity: 0;
+      }
+
+      20% {
+        opacity: 0.5;
+      }
+
+      100% {
+        transform: translateY(-120vh) scale(1.4);
+        opacity: 0;
+      }
+    }
+
+    .moneyRain {
+      position: fixed;
+      bottom: -100px;
+      font-size: 48px;
+      animation: moneyFly 2s linear forwards;
+      z-index: 4000;
+      pointer-events: none;
+    }
+
+    @keyframes moneyFly {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(-120vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="guideBox">
+    <div class="guideTitle">📖 属性早見表</div>
+
+    <div class="guideItem">
+      🔥 炎<br>
+      グー: 8ダメージ<br>
+      使用毎に+1<br>
+      HP5以下でバーストモード
+    </div>
+
+    <div class="guideItem">
+      💧 水<br>
+      グー: 8ダメージ<br>
+      あいこでパワー+1<br>
+      HP8以下なら+4回復
+      それ以外は+2回復
+    </div>
+
+    <div class="guideItem">
+      🪨 土<br>
+      グー: 8ダメージ<br>
+      1回: 被ダメ-1<br>
+      2回: 被ダメ-2<br>
+      3回: 永続+2<br>
+      以降2回毎に永続+2
+    </div>
+
+    <div class="guideItem">
+      ⚡ 雷<br>
+      グー: 4ダメージ<br>
+      次回グー: 20ダメージ<br>
+      強化中チョキ+3<br>
+      チョキ3回で解除
+    </div>
+
+    <div class="guideItem">
+      🥊 格闘家<br>
+      グー: 7ダメージ<br>
+      グー消費1<br>
+      パーでパワー+2<br>
+      最大パワー4
+    </div>
+
+    <div class="guideItem">
+      🎲 ギャンブラー<br>
+      グーで全パワー消費<br>
+      P1: 1d3 (最大3)<br>
+      P2: 1d3+1d7 (最大10)<br>
+      P3: 1d3+1d7+5 (最大15)<br>
+      25分の1で確変突入<br>
+      確変: 88%で消費なし
+    </div>
+
+    <div class="guideItem">
+      ✋ パー<br>
+      2ダメージ + パワー+1
+    </div>
+
+    <div class="guideItem">
+      ✌️ チョキ<br>
+      4ダメージ
+    </div>
+  </div>
+  <div class="container">
+    <h1>✊ 属性じゃんけんバトル ✋</h1>
+
+    <div id="modeScreen">
+      <h2>モード選択</h2>
+
+      <div class="buttons">
+        <button onclick="selectMode('cpu')">🤖 CPU戦</button>
+        <button onclick="selectMode('friend')">👥 友達と戦う</button>
+        <button onclick="openOnlineMenu()">🌐 オンライン</button>
+        
+      </div>
+    </div>
+
+    <button
+      class="jackpotToggle"
+      onclick="toggleJackpotMode()"
+      id="jackpotButton"
+    >
+      🎰 OFF
+    </button>
+
+    <div id="onlineScreen" style="display:none;">
+      <h2>🌐 オンライン対戦</h2>
+
+      <div class="buttons" style="flex-direction:column;align-items:center;">
+        <input
+          id="roomCodeInput"
+          placeholder="合言葉を入力"
+        />
+
+        <input
+          id="playerNameInput"
+          placeholder="名前を入力"
+          style="padding:14px;border-radius:12px;border:none;font-size:18px;width:260px;"
+          style="padding:14px;border-radius:12px;border:none;font-size:18px;width:260px;"
+        />
+
+        <button onclick="createOnlineRoom()">ルーム作成</button>
+        <button onclick="joinOnlineRoom()">ルーム参加</button>
+        <button onclick="closeOnlineMenu()">戻る</button>
+      </div>
+
+      <div id="onlineStatus" style="margin-top:20px;text-align:center;opacity:0.8;"></div>
+    </div>
+
+    <div id="elementScreen" style="display:none;">
+      <h2 id="elementSelectTitle">PLAYER1 の属性を選択</h2>
+
+      <div class="buttons">
+        <button onclick="selectElement('fire')">🔥 炎</button>
+        <button onclick="selectElement('water')">💧 水</button>
+        <button onclick="selectElement('earth')">🪨 土</button>
+        <button onclick="selectElement('thunder')">⚡ 雷</button>
+        <button onclick="selectElement('fighter')">🥊 格闘家</button>
+        <button onclick="selectElement('gambler')">🎲 ギャンブラー</button>
+      </div>
+    </div>
+
+    <div id="gameScreen" style="display:none;">
+
+      <div class="statusRow">
+        <div class="card">
+          <div class="label">PLAYER HP</div>
+          <div class="big" id="playerHPText">30</div>
+          <div class="bar">
+            <div class="fill" id="playerHPBar"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="label" id="enemyNameLabel">対戦相手 HP</div>
+          <div class="big" id="cpuHPText">30</div>
+          <div class="bar">
+            <div class="fill" id="cpuHPBar"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="statusRow">
+        <div class="card">
+          <div class="label">PLAYER</div>
+          <div class="big" id="playerElement"></div>
+          <div id="playerEffect">効果なし</div>
+          <div class="bar">
+            <div class="fill powerFill" id="playerPowerBar"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="label" id="enemyElementLabel">対戦相手</div>
+          <div class="big" id="cpuElement"></div>
+          <div id="cpuEffect">効果なし</div>
+          <div class="bar">
+            <div class="fill powerFill" id="cpuPowerBar"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button class="handButton" onclick="selectHand(0,this)">✊ グー</button>
+        <button class="handButton" onclick="selectHand(1,this)">✌️ チョキ</button>
+        <button class="handButton" onclick="selectHand(2,this)">✋ パー</button>
+      </div>
+
+      <div class="buttons">
+        <button id="okButton" onclick="confirmHand()" style="display:none;">
+          OK
+        </button>
+      </div>
+
+      <div class="result" id="result">
+        バトル開始！
+      </div>
+    </div>
+  </div>
+
+  <div id="burstFlameEffect" class="burstFlame"></div>
+
+  <div id="bigDamageEffect"></div>
+  <div id="impactFlash"></div>
+  <div id="shockwaveEffect"></div>
+  <div id="moneyRainEffect"></div>
+
+  <div class="cutin hidden" id="cutin">
+    <div id="cutinText">じゃんけん…！</div>
+  </div>
+
+  <script>
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playJackpotSound(){
+      const osc1 = audioContext.createOscillator();
+      const osc2 = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+
+      osc1.type = "sawtooth";
+      osc2.type = "square";
+
+      osc1.frequency.setValueAtTime(220, audioContext.currentTime);
+      osc1.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + 0.6);
+
+      osc2.frequency.setValueAtTime(330, audioContext.currentTime);
+      osc2.frequency.exponentialRampToValueAtTime(1320, audioContext.currentTime + 0.6);
+
+      gain.gain.setValueAtTime(0.25, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.7);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(audioContext.destination);
+
+      osc1.start();
+      osc2.start();
+
+      osc1.stop(audioContext.currentTime + 0.7);
+      osc2.stop(audioContext.currentTime + 0.7);
+    }
+
+    function playPonSound(){
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+
+      osc.type = "square";
+      osc.frequency.setValueAtTime(110, audioContext.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(60, audioContext.currentTime + 0.15);
+
+      gain.gain.setValueAtTime(0.5, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
+
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+
+      osc.start();
+      osc.stop(audioContext.currentTime + 0.2);
+    }
+    const hands = ["✊","✌️","✋"];
+
+    let onlineMode = false;
+    let roomCode = "";
+    let playerName = "PLAYER";
+    let enemyName = "対戦相手";
+
+    let gameMode = "cpu";
+    let friendTurn = 1;
+    let friendHand1 = null;
+    let friendHand2 = null;
+    let selectedFriendHand = null;
+    let jackpotMode = false;
+    let playerKakuhen = false;
+    let cpuKakuhen = false;
+    const elementNames = {
+      fire:"🔥 炎",
+      water:"💧 水",
+      earth:"🪨 土",
+      thunder:"⚡ 雷",
+      fighter:"🥊 格闘家",
+      gambler:"🎲 ギャンブラー"
+    };
+
+    let playerElement = "";
+    let cpuElement = ["fire","water","earth","thunder"][Math.floor(Math.random()*4)];
+    let friendElement2 = "";
+    let selectingSecondElement = false;
+
+    let playerHP = 30;
+    let cpuHP = 30;
+
+    let playerPower = 0;
+    let cpuPower = 0;
+
+    let playerEarth = false;
+    let cpuEarth = false;
+
+    let playerThunder = false;
+    let cpuThunder = false;
+
+    let playerThunderScissors = 0;
+    let cpuThunderScissors = 0;
+
+    let playerFireBoost = 0;
+    let cpuFireBoost = 0;
+
+    let playerEarthCount = 0;
+    let cpuEarthCount = 0;
+
+    let playerEarthShield = 0;
+    let cpuEarthShield = 0;
+
+    let playerEarthBoost = 0;
+    let cpuEarthBoost = 0;
+
+    function toggleJackpotMode(){
+      jackpotMode = !jackpotMode;
+
+      document.getElementById("jackpotButton").innerHTML = jackpotMode
+        ? "🎰 ON" : "🎰 OFF";
+    }
+
+    function openOnlineMenu(){
+      document.getElementById("modeScreen").style.display = "none";
+      document.getElementById("onlineScreen").style.display = "block";
+    }
+
+    function closeOnlineMenu(){
+      document.getElementById("onlineScreen").style.display = "none";
+      document.getElementById("modeScreen").style.display = "block";
+    }
+
+    function createOnlineRoom(){
+      const code = document.getElementById("roomCodeInput").value.trim();
+      playerName = document.getElementById("playerNameInput").value.trim() || "PLAYER";
+
+      if(!code){
+        document.getElementById("onlineStatus").innerHTML = "合言葉を入力してください";
+        return;
+      }
+
+      onlineMode = true;
+      roomCode = code;
+      gameMode = "online";
+
+      if(socket){
+        socket.emit("joinRoom", {
+          roomCode,
+          playerName,
+          host:true
+        });
+      }
+
+      document.getElementById("onlineStatus").innerHTML = `
+        🌐 ルーム作成中...<br>
+        ROOM: <b>${code}</b>
+      `;
+
+      setTimeout(()=>{
+        document.getElementById("onlineScreen").style.display = "none";
+        document.getElementById("elementScreen").style.display = "block";
+      },1200);
+    }
+
+    function joinOnlineRoom(){
+      const code = document.getElementById("roomCodeInput").value.trim();
+      playerName = document.getElementById("playerNameInput").value.trim() || "PLAYER";
+
+      if(!code){
+        document.getElementById("onlineStatus").innerHTML = "合言葉を入力してください";
+        return;
+      }
+
+      onlineMode = true;
+      roomCode = code;
+      gameMode = "online";
+
+      if(socket){
+        socket.emit("joinRoom", {
+          roomCode,
+          playerName,
+          host:false
+        });
+      }
+
+      document.getElementById("onlineStatus").innerHTML = `
+        🌐 接続中...<br>
+        ROOM: <b>${code}</b>
+      `;
+
+      setTimeout(()=>{
+        document.getElementById("onlineScreen").style.display = "none";
+        document.getElementById("elementScreen").style.display = "block";
+      },1200);
+    }
+
+    function selectMode(mode){
+      gameMode = mode;
+
+      document.getElementById("modeScreen").style.display = "none";
+      document.getElementById("elementScreen").style.display = "block";
+    }
+
+    function selectElement(element){
+      if(gameMode === "online"){
+        playerElement = element;
+
+        if(socket){
+          socket.emit("selectElement", {
+            roomCode,
+            element
+          });
+        }
+
+        document.getElementById("playerElement").innerHTML = elementNames[playerElement];
+        document.getElementById("result").innerHTML = "相手の属性選択待ち...";
+
+        // 相手の属性が既に届いていたら即開始
+        if(cpuElement && cpuElement !== ""){
+          document.getElementById("elementScreen").style.display = "none";
+          document.getElementById("gameScreen").style.display = "block";
+          updateUI();
+        }
+
+        return;
+      }
+
+      if(gameMode === "friend"){
+
+        if(!selectingSecondElement){
+          playerElement = element;
+          selectingSecondElement = true;
+
+          document.getElementById("result").innerHTML = "PLAYER2 の属性を選択してください";
+          document.getElementById("elementSelectTitle").innerHTML = "PLAYER2 の属性を選択";
+          return;
+        }
+        else {
+          friendElement2 = element;
+          cpuElement = friendElement2;
+        }
+      }
+      else {
+        playerElement = element;
+        document.getElementById("elementSelectTitle").innerHTML = "属性を選択";
+      }
+
+      document.getElementById("playerElement").innerHTML = elementNames[playerElement];
+      document.getElementById("cpuElement").innerHTML = elementNames[cpuElement];
+
+      document.getElementById("elementScreen").style.display = "none";
+      document.getElementById("gameScreen").style.display = "block";
+
+      startBattleBGM();
+
+      if(playerElement === "fire" && playerHP <= 5){
+        let flames = "";
+
+        for(let i=0;i<12;i++){
+          flames += `
+            <div class="flame" style="left:${Math.random()*100}vw;animation-delay:${Math.random()*2}s;">
+              🔥
+            </div>
+          `;
+        }
+
+        document.getElementById("burstFlameEffect").innerHTML = flames;
+      }
+      else {
+        document.getElementById("burstFlameEffect").innerHTML = "";
+      }
+
+      updateUI();
+    }
+
+    function updateUI(){
+      document.getElementById("playerHPText").innerHTML = playerHP;
+      document.getElementById("cpuHPText").innerHTML = cpuHP;
+
+      document.getElementById("playerHPBar").style.width = `${playerHP/30*100}%`;
+      document.getElementById("cpuHPBar").style.width = `${cpuHP/30*100}%`;
+
+      const playerMaxPower = playerElement === "fighter" ? 4 : 3;
+      const cpuMaxPower = cpuElement === "fighter" ? 4 : 3;
+
+      document.getElementById("playerPowerBar").style.width = `${playerPower/playerMaxPower*100}%`;
+      document.getElementById("cpuPowerBar").style.width = `${cpuPower/cpuMaxPower*100}%`;
+
+      document.getElementById("playerPowerBar").innerHTML = `${playerPower}/${playerMaxPower}`;
+      document.getElementById("cpuPowerBar").innerHTML = `${cpuPower}/${cpuMaxPower}`;
+
+      if(playerKakuhen){
+        document.getElementById("playerHPBar").classList.add("kakuhen");
+        document.getElementById("playerPowerBar").classList.add("kakuhen");
+        document.getElementById("playerElement").classList.add("kakuhen");
+      }
+      else {
+        document.getElementById("playerHPBar").classList.remove("kakuhen");
+        document.getElementById("playerPowerBar").classList.remove("kakuhen");
+        document.getElementById("playerElement").classList.remove("kakuhen");
+      }
+
+      if(cpuKakuhen){
+        document.getElementById("cpuHPBar").classList.add("kakuhen");
+        document.getElementById("cpuPowerBar").classList.add("kakuhen");
+        document.getElementById("cpuElement").classList.add("kakuhen");
+      }
+      else {
+        document.getElementById("cpuHPBar").classList.remove("kakuhen");
+        document.getElementById("cpuPowerBar").classList.remove("kakuhen");
+        document.getElementById("cpuElement").classList.remove("kakuhen");
+      }
+
+      document.getElementById("playerEffect").innerHTML =
+        playerElement === "earth"
+          ? `🪨 攻+${playerEarthBoost} 防-${playerEarthShield}`
+          :
+        playerEarth ? "🪨 次+2" :
+        playerThunder ? `⚡ 雷強化 (${3 - playerThunderScissors}回)` :
+        playerElement === "fire"
+          ? `${playerHP <= 5 ? "🔥🔥 バースト" : "🔥"} グー+${playerFireBoost}`
+          :
+        "効果なし";
+      document.getElementById("cpuEffect").innerHTML =
+        cpuElement === "earth"
+          ? `🪨 攻+${cpuEarthBoost} 防-${cpuEarthShield}`
+          :
+        cpuEarth ? "🪨 次+2" :
+        cpuThunder ? `⚡ 雷強化 (${3 - cpuThunderScissors}回)` :
+        cpuElement === "fire"
+          ? `${cpuHP <= 5 ? "🔥🔥 バースト" : "🔥"} グー+${cpuFireBoost}`
+          :
+        "効果なし";
+    }
+
+    function getAttack(hand, element, power, earth, thunder, isPlayer){
+      let damage = 0;
+      let newPower = power;
+      let newEarth = earth;
+      let newThunder = thunder;
+
+      if(hand === 0){
+        const gooCost = element === "fighter"
+          ? 1
+          : element === "gambler"
+            ? power
+            : 2;
+
+        if(power >= gooCost){
+
+          const kakuhenActive = isPlayer ? playerKakuhen : cpuKakuhen;
+
+          const noConsume = kakuhenActive && Math.random() < 0.88;
+
+          if(!noConsume){
+            newPower -= gooCost;
+
+            if(isPlayer){
+              playerKakuhen = false;
+            }
+            else {
+              cpuKakuhen = false;
+            }
+          }
+
+          if(element === "fire") {
+            damage = 8 + (isPlayer ? playerFireBoost : cpuFireBoost);
+
+            if(isPlayer){
+              playerFireBoost += 1;
+            }
+            else {
+              cpuFireBoost += 1;
+            }
+          }
+          if(element === "water") {
+            damage = 8;
+          }
+          if(element === "earth") {
+            damage = 8 + (isPlayer ? playerEarthBoost : cpuEarthBoost);
+
+            if(isPlayer){
+              playerEarthCount += 1;
+
+              if(playerEarthCount === 1){
+                playerEarthShield = 1;
+              }
+
+              if(playerEarthCount === 2){
+                playerEarthShield = 2;
+              }
+
+              if(playerEarthCount === 3){
+                playerEarthBoost += 2;
+              }
+
+              if(playerEarthCount > 3 && (playerEarthCount - 3) % 2 === 0){
+                playerEarthBoost += 2;
+              }
+            }
+            else {
+              cpuEarthCount += 1;
+
+              if(cpuEarthCount === 1){
+                cpuEarthShield = 1;
+              }
+
+              if(cpuEarthCount === 2){
+                cpuEarthShield = 2;
+              }
+
+              if(cpuEarthCount === 3){
+                cpuEarthBoost += 2;
+              }
+
+              if(cpuEarthCount > 3 && (cpuEarthCount - 3) % 2 === 0){
+                cpuEarthBoost += 2;
+              }
+            }
+          }
+          if(element === "fighter") {
+            damage = 7;
+          }
+
+          if(element === "gambler") {
+            const usedPower = power;
+
+            if(usedPower === 1){
+              damage = Math.floor(Math.random()*3)+1;
+            }
+
+            if(usedPower === 2){
+              damage =
+                (Math.floor(Math.random()*3)+1) +
+                (Math.floor(Math.random()*7)+1);
+            }
+
+            if(usedPower >= 3){
+              damage =
+                (Math.floor(Math.random()*3)+1) +
+                (Math.floor(Math.random()*7)+1) + 5;
+
+              if(jackpotMode || Math.floor(Math.random()*25) === 0){
+                playJackpotSound();
+                newPower += 2;
+
+                if(isPlayer){
+                  playerKakuhen = true;
+                }
+                else {
+                  cpuKakuhen = true;
+                }
+
+                setTimeout(()=>{
+                  for(let i=0;i<25;i++){
+                    const left = Math.random()*100;
+
+                    document.getElementById("moneyRainEffect").innerHTML += `
+                      <div class="moneyRain" style="left:${left}vw;animation-delay:${Math.random()*0.5}s;">
+                        💴✨
+                      </div>
+                    `;
+                  }
+
+                  setTimeout(()=>{
+                    document.getElementById("moneyRainEffect").innerHTML = "";
+                  },2200);
+                },100);
+              }
+            }
+          }
+
+          if(element === "thunder") {
+            damage = thunder ? 20 : 4;
+            newThunder = true;
+          }
+
+          if(earth){
+            damage += 2;
+            newEarth = false;
+          }
+        }
+        else {
+          damage = 1;
+        }
+      }
+
+      if(hand === 1){
+        damage = 4;
+
+        if(element === "thunder" && thunder){
+          damage += 3;
+
+          if(isPlayer){
+            playerThunderScissors += 1;
+
+            if(playerThunderScissors >= 3){
+              newThunder = false;
+              playerThunderScissors = 0;
+            }
+          }
+          else {
+            cpuThunderScissors += 1;
+
+            if(cpuThunderScissors >= 3){
+              newThunder = false;
+              cpuThunderScissors = 0;
+            }
+          }
+        }
+
+        if(element === "earth"){
+          damage += isPlayer ? playerEarthBoost : cpuEarthBoost;
+        }
+      }
+
+      if(hand === 2){
+        damage = 2;
+
+        if(element === "earth"){
+          damage += isPlayer ? playerEarthBoost : cpuEarthBoost;
+        }
+        const maxPower = element === "fighter" ? 4 : 3;
+        const gain = element === "fighter" ? 2 : 1;
+
+        newPower = Math.min(newPower + gain,maxPower);
+      }
+
+      if(element === "water" && hand === 0 && power >= 2){
+        // 回復処理は戦闘側で使用
+      }
+
+      if(element === "fire"){
+        const currentHP = isPlayer ? playerHP : cpuHP;
+
+        if(currentHP <= 5){
+          damage *= 2;
+        }
+      }
+
+      return {
+        damage,
+        power:newPower,
+        earth:newEarth,
+        thunder:newThunder
+      };
+    }
+
+    function selectHand(hand,button){
+      selectedFriendHand = hand;
+
+      document.querySelectorAll('.handButton').forEach(btn=>{
+        btn.classList.remove('selectedHand');
+      });
+
+      button.classList.add('selectedHand');
+
+      document.getElementById("okButton").style.display = "inline-block";
+
+      if(gameMode === "friend"){
+        document.getElementById("result").innerHTML = `
+          PLAYER${friendTurn} が手を選択中
+        `;
+      }
+    }
+
+    function confirmHand(){
+      if(selectedFriendHand === null) return;
+
+      play(selectedFriendHand);
+
+      selectedFriendHand = null;
+      document.getElementById("okButton").style.display = "none";
+
+      document.querySelectorAll('.handButton').forEach(btn=>{
+        btn.classList.remove('selectedHand');
+      });
+    }
+
+    let onlineSelectedHand = null;
+    let enemyOnlineHand = null;
+
+    async function play(playerHand){
+      if(gameMode === "online"){
+
+        // 初回入力
+        if(onlineSelectedHand === null){
+          onlineSelectedHand = playerHand;
+
+          if(socket){
+            socket.emit("selectHand", {
+              roomCode,
+              hand: playerHand
+            });
+          }
+
+          // 相手待ち
+          if(enemyOnlineHand === null){
+            document.getElementById("result").innerHTML = "相手の手待ち...";
+            return;
+          }
+        }
+
+        // 両者の手が揃った
+        playerHand = onlineSelectedHand;
+        cpuHandFixed = enemyOnlineHand;
+
+        onlineSelectedHand = null;
+        enemyOnlineHand = null;
+      }
+
+      if(gameMode === "friend"){
+
+        if(friendTurn === 1){
+          friendHand1 = playerHand;
+          friendTurn = 2;
+
+          document.getElementById("result").innerHTML = `
+            PLAYER1 OK！<br>
+            PLAYER2は手を選んでOKを押してください
+          `;
+          return;
+        }
+
+        if(friendTurn === 2){
+          friendHand2 = playerHand;
+          friendTurn = 1;
+
+          playerHand = friendHand1;
+          cpuHandFixed = friendHand2;
+        }
+      }
+      if(playerHP <= 0 || cpuHP <= 0) return;
+
+      const cpuHand = gameMode === "cpu"
+        ? Math.floor(Math.random()*3)
+        : cpuHandFixed;
+
+      let p = getAttack(playerHand,playerElement,playerPower,playerEarth,playerThunder,true);
+      let c = getAttack(cpuHand,cpuElement,cpuPower,cpuEarth,cpuThunder,false);
+
+      playerPower = p.power;
+      cpuPower = c.power;
+
+      playerEarth = p.earth;
+      cpuEarth = c.earth;
+
+      playerThunder = p.thunder;
+      cpuThunder = c.thunder;
+
+      const cutin = document.getElementById("cutin");
+      const cutinText = document.getElementById("cutinText");
+
+      cutin.classList.remove("hidden");
+      cutinText.innerHTML = "じゃんけん…！";
+
+      await new Promise(r=>setTimeout(r,800));
+
+      let resultText = "";
+      let reducedDamage = 0;
+
+      const playerWin =
+        (playerHand===0&&cpuHand===1)||
+        (playerHand===1&&cpuHand===2)||
+        (playerHand===2&&cpuHand===0);
+
+      if(playerHand===cpuHand){
+        resultText = "DRAW";
+
+        if(playerElement === "water"){
+          playerPower = Math.min(playerPower + 1, playerElement === "fighter" ? 4 : 3);
+        }
+
+        if(cpuElement === "water"){
+          cpuPower = Math.min(cpuPower + 1, cpuElement === "fighter" ? 4 : 3);
+        }
+      }
+      else if(playerWin){
+        reducedDamage = Math.max(p.damage - cpuEarthShield,0);
+        cpuHP -= reducedDamage;
+
+        if(playerElement === "water" && playerHand === 0 && playerPower >= 0){
+          const healAmount = playerHP <= 8 ? 4 : 2;
+          playerHP = Math.min(playerHP + healAmount,30);
+        }
+        resultText = "YOU WIN";
+      }
+      else {
+        reducedDamage = Math.max(c.damage - playerEarthShield,0);
+        playerHP -= reducedDamage;
+
+        if(cpuElement === "water" && cpuHand === 0 && cpuPower >= 0){
+          const healAmount = cpuHP <= 8 ? 4 : 2;
+          cpuHP = Math.min(cpuHP + healAmount,30);
+        }
+        resultText = "YOU LOSE";
+      }
+
+      playerHP = Math.max(playerHP,0);
+      cpuHP = Math.max(cpuHP,0);
+
+      const finalDamage = playerHand===cpuHand
+        ? 0
+        : reducedDamage;
+
+      if(finalDamage >= 8){
+        const bigDamage = finalDamage;
+        document.getElementById("bigDamageEffect").innerHTML = `
+          <div class="bigDamage">CRITICAL ${bigDamage}</div>
+        `;
+
+        document.getElementById("impactFlash").innerHTML = `
+          <div class="impactFlash"></div>
+        `;
+
+        document.getElementById("shockwaveEffect").innerHTML = `
+          <div class="shockwave"></div>
+        `;
+
+        setTimeout(()=>{
+          document.getElementById("bigDamageEffect").innerHTML = "";
+          document.getElementById("impactFlash").innerHTML = "";
+          document.getElementById("shockwaveEffect").innerHTML = "";
+        },900);
+      }
+
+      playPonSound();
+
+      cutinText.innerHTML = `
+        ポン！！
+        <div class="hands">
+          <div>${hands[cpuHand]}</div>
+          <div>VS</div>
+          <div>${hands[playerHand]}</div>
+        </div>
+        <div style="margin-top:20px;">${resultText}</div>
+        <div style="margin-top:16px;font-size:32px;line-height:1.6;">
+          ${playerHand===cpuHand ? "ダメージなし" : playerWin ? `🤖 CPU -${reducedDamage}` : `🧍 PLAYER -${reducedDamage}`}
+        </div>
+      `;
+
+      await new Promise(r=>setTimeout(r,1200));
+
+      cutin.classList.add("hidden");
+
+      document.getElementById("result").innerHTML = `
+        ${playerHand===cpuHand
+          ? "前回ダメージ: なし"
+          : playerWin
+            ? gameMode === "friend"
+              ? `前回ダメージ: PLAYER2に${reducedDamage}`
+              : gameMode === "online"
+                ? `前回ダメージ: ${enemyName}に${reducedDamage}`
+                : `前回ダメージ: CPUに${reducedDamage}`
+            : gameMode === "friend"
+              ? `前回ダメージ: PLAYER1に${reducedDamage}`
+              : gameMode === "online"
+                ? `前回ダメージ: ${playerName}に${reducedDamage}`
+                : `前回ダメージ: PLAYERに${reducedDamage}`}
+      `;
+
+      if(playerHP<=0){
+        document.getElementById("result").innerHTML += `
+          <br><br>☠️ GAME OVER
+          <br><br>
+          <button onclick="resetGame()">属性選択へ戻る</button>
+          <button onclick="returnToModeSelect()">ゲームモード選択へ戻る</button>
+        `;
+      }
+
+      if(cpuHP<=0){
+        document.getElementById("result").innerHTML += `
+          <br><br>🏆 YOU WIN
+          <br><br>
+          <button onclick="resetGame()">属性選択へ戻る</button>
+          <button onclick="returnToModeSelect()">ゲームモード選択へ戻る</button>
+        `;
+      }
+
+      updateUI();
+    }
+
+    function resetGame(){
+      playerHP = 30;
+      cpuHP = 30;
+
+      playerPower = 0;
+      cpuPower = 0;
+
+      playerEarth = false;
+      cpuEarth = false;
+
+      playerThunder = false;
+      cpuThunder = false;
+
+      playerFireBoost = 0;
+      cpuFireBoost = 0;
+
+      playerEarthCount = 0;
+      cpuEarthCount = 0;
+
+      playerEarthBoost = 0;
+      cpuEarthBoost = 0;
+
+      playerEarthShield = 0;
+      cpuEarthShield = 0;
+
+      playerKakuhen = false;
+      cpuKakuhen = false;
+
+      playerElement = "";
+      cpuElement = ["fire","water","earth","thunder"][Math.floor(Math.random()*4)];
+
+      document.getElementById("elementScreen").style.display = "block";
+      document.getElementById("gameScreen").style.display = "none";
+
+      stopBattleBGM();
+
+      document.getElementById("elementSelectTitle").innerHTML = gameMode === "friend"
+        ? "PLAYER1 の属性を選択"
+        : "属性を選択";
+
+      document.getElementById("result").innerHTML = "バトル開始！";
+
+      friendTurn = 1;
+      friendHand1 = null;
+      friendHand2 = null;
+      selectingSecondElement = false;
+      friendElement2 = "";
+      selectedFriendHand = null;
+
+      document.querySelectorAll('.handButton').forEach(btn=>{
+        btn.classList.remove('selectedHand');
+      });
+
+      document.getElementById("okButton").style.display = "none";
+
+      updateUI();
+    }
+
+    function returnToModeSelect(){
+      resetGame();
+
+      document.getElementById("elementScreen").style.display = "none";
+      document.getElementById("modeScreen").style.display = "block";
+    }
+  </script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+  <script>
+    // ===== オンライン通信準備 =====
+    // Render / Railway などに Node.js サーバーを立てると有効化可能
+
+    let socket = null;
+
+    function connectOnlineServer(){
+      try {
+        socket = io();
+
+        socket.on("connect",()=>{
+          console.log("オンライン接続成功");
+        });
+
+        socket.on("enemyName",(data)=>{
+          enemyName = data.name;
+
+          document.getElementById("enemyNameLabel").innerHTML = `${enemyName} HP`;
+          document.getElementById("enemyElementLabel").innerHTML = enemyName;
+        });
+
+        socket.on("roomJoined",(data)=>{
+          document.getElementById("onlineStatus").innerHTML = `
+            🌐 接続成功<br>
+            ROOM: ${data.room}
+          `;
+        });
+
+        socket.on("enemyElement",(data)=>{
+          cpuElement = data.element;
+
+          document.getElementById("cpuElement").innerHTML = elementNames[cpuElement];
+
+          if(playerElement !== ""){
+            document.getElementById("elementScreen").style.display = "none";
+            document.getElementById("gameScreen").style.display = "block";
+
+            updateUI();
+          }
+        });
+
+        socket.on("enemySelected",(data)=>{
+          enemyOnlineHand = data.hand;
+
+          document.getElementById("result").innerHTML = "相手の手入力完了！";
+
+          if(onlineSelectedHand !== null && enemyOnlineHand !== null){
+            play(onlineSelectedHand);
+          }
+        });
+      }
+      catch(e){
+        console.log("Socket.io未接続",e);
+      }
+    }
+
+    connectOnlineServer();
+  </script>
+</body>
+</html>
