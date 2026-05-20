@@ -995,6 +995,9 @@
       gameMode = mode;
 
       document.getElementById("modeScreen").style.display = "none";
+      document.getElementById("modeScreen").style.display = "none";
+      document.getElementById("onlineScreen").style.display = "none";
+      document.getElementById("waitingRoom").style.display = "none";
       document.getElementById("elementScreen").style.display = "block";
     }
 
@@ -1781,6 +1784,10 @@
     }
 
     function resetGame(){
+      if(gameMode === "online"){
+        playerElement = playerElement || "";
+        cpuElement = cpuElement || "";
+      }
       playerHP = 30;
       cpuHP = 30;
 
@@ -1936,6 +1943,9 @@
         });
 
         socket.on("battleStart",()=>{
+          playerElement = "";
+          cpuElement = "";
+
           resetGame();
 
           document.getElementById("onlineScreen").style.display = "none";
@@ -1964,3 +1974,4 @@
   </script>
 </body>
 </html>
+
