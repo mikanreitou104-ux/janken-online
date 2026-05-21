@@ -6,14 +6,8 @@ const { Server } = require("socket.io");
 const app = express();
 const server = http.createServer(app);
 
-// =========================
-// publicフォルダを公開
-// =========================
 app.use(express.static(path.join(__dirname, "public")));
 
-// =========================
-// Socket.IO
-// =========================
 const io = new Server(server, {
     cors: {
         origin: "*"
@@ -26,6 +20,33 @@ const io = new Server(server, {
 const rooms = {};
 
 // =========================
+// 共通関数
+// =========================
+function sanitizeRoomCode(code) {
+    return String(code || "")
+        .trim()
+        .toUpperCase()
+        .slice(0, 12);
+}
+
+function sanitizePlayerName(name) {
+    return String(name || "Player")
+        .trim()
+        .slice(0, 20);
+}
+
+function emitRoomUpdate(roomCode) {
+
+    if (!rooms[roomCode]) return;
+
+    io.to(roomCode).emit("roomUpdated", {
+        roomCode,
+        players: rooms[roomCode].players,
+        roomSettings: rooms[roomCode].roomSettings
+    });
+}
+
+// =========================
 // Socket接続
 // =========================
 io.on("connection", (socket) => {
@@ -35,19 +56,16 @@ io.on("connection", (socket) => {
     // =========================
     // ルーム作成
     // =========================
-    socket.on("createRoom", (data) => {
+    socket.on("createRoom", (data = {}) => {
 
         try {
 
             const roomCode =
-                String(data.roomCode || "").trim();
+                sanitizeRoomCode(data.roomCode);
 
             const playerName =
-                String(data.playerName || "Player")
-                    .trim()
-                    .slice(0, 20);
+                sanitizePlayerName(data.playerName);
 
-            // バリデーション
             if (!roomCode) {
 
                 socket.emit(
@@ -58,7 +76,6 @@ io.on("connection", (socket) => {
                 return;
             }
 
-            // 重複防止
             if (rooms[roomCode]) {
 
                 socket.emit(
@@ -69,8 +86,8 @@ io.on("connection", (socket) => {
                 return;
             }
 
-            // ルーム作成
             rooms[roomCode] = {
+                hostId: socket.id,
 
                 players: [],
 
@@ -83,29 +100,19 @@ io.on("connection", (socket) => {
 
             socket.join(roomCode);
 
+            socket.roomCode = roomCode;
+
             rooms[roomCode].players.push({
                 id: socket.id,
                 name: playerName
             });
-
-            socket.roomCode = roomCode;
 
             console.log(
                 "ルーム作成:",
                 roomCode
             );
 
-            io.to(roomCode).emit(
-                "roomCreated",
-                {
-                    roomCode,
-                    players:
-                        rooms[roomCode].players,
-                    roomSettings:
-                        rooms[roomCode]
-                            .roomSettings
-                }
-            );
+            emitRoomUpdate(roomCode);
 
         } catch (err) {
 
@@ -121,19 +128,19 @@ io.on("connection", (socket) => {
     // =========================
     // ルーム参加
     // =========================
-    socket.on("joinRoom", (data) => {
+    socket.on("joinRoom", (data = {}) => {
 
         try {
 
             const roomCode =
-                String(data.roomCode || "").trim();
+                sanitizeRoomCode(data.roomCode);
 
             const playerName =
-                String(data.playerName || "Player")
-                    .trim()
-                    .slice(0, 20);
+                sanitizePlayerName(data.playerName);
 
-            if (!rooms[roomCode]) {
+            const room = rooms[roomCode];
+
+            if (!room) {
 
                 socket.emit(
                     "errorMessage",
@@ -143,11 +150,17 @@ io.on("connection", (socket) => {
                 return;
             }
 
-            // 人数制限
-            if (
-                rooms[roomCode]
-                    .players.length >= 8
-            ) {
+            // 同一参加防止
+            const alreadyJoined =
+                room.players.some(
+                    p => p.id === socket.id
+                );
+
+            if (alreadyJoined) {
+                return;
+            }
+
+            if (room.players.length >= 8) {
 
                 socket.emit(
                     "errorMessage",
@@ -159,28 +172,19 @@ io.on("connection", (socket) => {
 
             socket.join(roomCode);
 
-            rooms[roomCode].players.push({
+            socket.roomCode = roomCode;
+
+            room.players.push({
                 id: socket.id,
                 name: playerName
             });
-
-            socket.roomCode = roomCode;
 
             console.log(
                 "ルーム参加:",
                 roomCode
             );
 
-            io.to(roomCode).emit(
-                "roomJoined",
-                {
-                    players:
-                        rooms[roomCode].players,
-                    roomSettings:
-                        rooms[roomCode]
-                            .roomSettings
-                }
-            );
+            emitRoomUpdate(roomCode);
 
         } catch (err) {
 
@@ -198,44 +202,47 @@ io.on("connection", (socket) => {
     // =========================
     socket.on(
         "updateRoomSettings",
-        (data) => {
+        (data = {}) => {
 
             try {
 
                 const roomCode =
                     socket.roomCode;
 
-                if (!rooms[roomCode]) return;
+                const room =
+                    rooms[roomCode];
 
-                // スキルON/OFF
+                if (!room) return;
+
+                // ホストのみ変更可能
+                if (
+                    room.hostId !== socket.id
+                ) {
+
+                    socket.emit(
+                        "errorMessage",
+                        "ホストのみ変更できます"
+                    );
+
+                    return;
+                }
+
                 if (
                     typeof data.skillsEnabled
                     === "boolean"
                 ) {
 
-                    rooms[roomCode]
-                        .roomSettings
+                    room.roomSettings
                         .skillsEnabled =
                         data.skillsEnabled;
                 }
 
                 console.log(
                     "設定更新:",
-                    rooms[roomCode]
-                        .roomSettings
+                    room.roomSettings
                 );
 
-                io.to(roomCode).emit(
-                    "roomSettingsUpdated",
-                    {
-                        roomSettings:
-                            rooms[roomCode]
-                                .roomSettings,
-
-                        updatedBy:
-                            socket.id
-                    }
-                );
+                emitRoomUpdate(roomCode);
 
             } catch (err) {
 
@@ -254,18 +261,32 @@ io.on("connection", (socket) => {
             const roomCode =
                 socket.roomCode;
 
-            if (!rooms[roomCode]) return;
+            const room =
+                rooms[roomCode];
+
+            if (!room) return;
+
+            // ホストのみ
+            if (
+                room.hostId !== socket.id
+            ) {
+
+                socket.emit(
+                    "errorMessage",
+                    "ホストのみ開始できます"
+                );
+
+                return;
+            }
 
             io.to(roomCode).emit(
                 "gameStart",
                 {
                     players:
-                        rooms[roomCode]
-                            .players,
+                        room.players,
 
                     roomSettings:
-                        rooms[roomCode]
-                            .roomSettings
+                        room.roomSettings
                 }
             );
 
@@ -283,19 +304,20 @@ io.on("connection", (socket) => {
     // =========================
     // スキル使用
     // =========================
-    socket.on("useSkill", (data) => {
+    socket.on("useSkill", (data = {}) => {
 
         try {
 
             const roomCode =
                 socket.roomCode;
 
-            if (!rooms[roomCode]) return;
+            const room =
+                rooms[roomCode];
 
-            // スキル禁止
+            if (!room) return;
+
             if (
-                !rooms[roomCode]
-                    .roomSettings
+                !room.roomSettings
                     .skillsEnabled
             ) {
 
@@ -331,43 +353,47 @@ io.on("connection", (socket) => {
             const roomCode =
                 socket.roomCode;
 
-            if (
-                roomCode &&
-                rooms[roomCode]
-            ) {
+            const room =
+                rooms[roomCode];
 
-                rooms[roomCode].players =
-                    rooms[
-                        roomCode
-                    ].players.filter(
-                        p =>
-                            p.id !==
-                            socket.id
-                    );
+            if (!room) {
 
-                io.to(roomCode).emit(
-                    "playerLeft",
-                    {
-                        players:
-                            rooms[
-                                roomCode
-                            ].players
-                    }
+                console.log(
+                    "切断:",
+                    socket.id
                 );
 
-                // 空なら削除
-                if (
-                    rooms[roomCode]
-                        .players.length === 0
-                ) {
+                return;
+            }
 
-                    delete rooms[roomCode];
+            room.players =
+                room.players.filter(
+                    p => p.id !== socket.id
+                );
 
-                    console.log(
-                        "ルーム削除:",
-                        roomCode
-                    );
-                }
+            // ホスト移譲
+            if (
+                room.hostId === socket.id &&
+                room.players.length > 0
+            ) {
+
+                room.hostId =
+                    room.players[0].id;
+            }
+
+            emitRoomUpdate(roomCode);
+
+            // 空なら削除
+            if (
+                room.players.length === 0
+            ) {
+
+                delete rooms[roomCode];
+
+                console.log(
+                    "ルーム削除:",
+                    roomCode
+                );
             }
 
             console.log(
