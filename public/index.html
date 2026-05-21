@@ -17,6 +17,40 @@
       min-height: 100vh;
     }
 
+    @media (max-width: 768px) {
+    .guideBox {
+      left: 8px !important;
+      top: auto !important;
+      bottom: 8px;
+      width: calc(100vw - 16px) !important;
+      max-width: 320px;
+      font-size: 12px;
+      max-height: 55vh;
+      overflow-y: auto;
+      border-radius: 16px;
+    }
+
+    .guideClosed {
+      width: 52px !important;
+      height: 52px !important;
+      bottom: 12px;
+    }
+
+    .guideTitle {
+      font-size: 14px;
+    }
+
+    .guideSectionHeader {
+      font-size: 13px;
+      padding: 8px 10px;
+    }
+
+    .guideSectionBody {
+      font-size: 12px;
+      padding: 8px 10px;
+    }
+  }
+
     .guideBox {
       transition: 0.25s;
       z-index: 2000;
@@ -98,22 +132,138 @@
       opacity: 0.9;
     }
 
+    body::before {
+      content:"";
+      position:fixed;
+      inset:0;
+      background:
+        radial-gradient(circle at top left,rgba(255,255,255,0.05),transparent 28%),
+        radial-gradient(circle at bottom right,rgba(255,255,255,0.03),transparent 24%);
+      pointer-events:none;
+      z-index:-1;
+    }
+
     .container {
-      width: 95%;
-      max-width: 700px;
-      background: rgba(255,255,255,0.06);
-      border-radius: 24px;
-      padding: 24px;
+      position:relative;
+      overflow:hidden;
+      width:min(92vw,760px);
+      max-width:760px;
+      background:
+        linear-gradient(180deg,rgba(255,255,255,0.065),rgba(255,255,255,0.03));
+      border:1px solid rgba(255,255,255,0.07);
+      border-radius: 30px;
+      box-shadow:
+        0 24px 70px rgba(0,0,0,0.38);
+      backdrop-filter:blur(10px);
+      padding:36px 28px 44px;
     }
 
     h1 {
       text-align: center;
       margin-top: 0;
+      margin-bottom: 2px;
+      font-size: clamp(32px,4.2vw,46px);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color:#f8fafc;
+      position: relative;
+      font-family: 'Yu Gothic UI','Hiragino Sans','Segoe UI',sans-serif;
+      line-height:1.08;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:14px;
+    }
+
+    h1::after {
+      content:"";
+    }
+
+    h1::before {
+      content:"";
+      width:54px;
+      height:2px;
+      border-radius:999px;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,0.75));
+      opacity:0.9;
+    }
+
+    .titleSub {
+      text-align:center;
+      margin-top:2px;
+      opacity:0.48;
+      font-size:10px;
+      letter-spacing:4px;
+      text-transform:uppercase;
+      font-weight:700;
+      color:#e2e8f0;
+    }
+
+    .modeCard {
+      border:1px solid rgba(255,255,255,0.06);
+      position:relative;
+      overflow:hidden;
+      border:none;
+      min-width:220px;
+      min-height:210px;
+      border-radius:24px;
+      background:linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.05));
+      backdrop-filter:blur(10px);
+      color:white;
+      transition:0.25s;
+      box-shadow:0 0 25px rgba(0,0,0,0.28);
+    }
+
+    .modeCard:hover {
+      transform:translateY(-8px) scale(1.04);
+      box-shadow:0 0 40px rgba(255,255,255,0.18);
+    }
+
+    .modeEmoji {
+      font-size:52px;
+      margin-bottom:10px;
+    }
+
+    .modeTitle {
+      font-size:26px;
+      font-weight:bold;
+    }
+
+    .modeDesc {
+      margin-top:10px;
+      font-size:14px;
+      opacity:0.82;
+      line-height:1.6;
+    }
+
+    .modeGlow {
+      position:absolute;
+      width:120px;
+      height:120px;
+      border-radius:999px;
+      top:-30px;
+      right:-30px;
+      opacity:0.25;
+      filter:blur(18px);
+    }
+
+    .cpuGlow { background:#38bdf8; }
+    .friendGlow { background:#22c55e; }
+    .onlineGlow { background:#a855f7; }
+
+    @keyframes titleGlow {
+      from {
+        filter:brightness(1);
+      }
+
+      to {
+        filter:brightness(1.2);
+      }
     }
 
     .buttons {
       display: flex;
-      gap: 12px;
+      gap:18px;
       justify-content: center;
       flex-wrap: wrap;
       margin-top: 20px;
@@ -121,34 +271,251 @@
 
     button {
       border: none;
-      padding: 16px 24px;
+      padding:18px 26px;
       border-radius: 16px;
       font-size: 18px;
       cursor: pointer;
       transition: 0.2s;
     }
 
+    .elementGrid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:14px;
+      margin-top:28px;
+      align-items:stretch;
+    }
+
+    .elementCard {
+      position:relative;
+      overflow:hidden;
+      border:none;
+      border-radius:26px;
+      padding:20px 18px;
+      min-height:170px;
+      background:linear-gradient(165deg,rgba(255,255,255,0.12),rgba(255,255,255,0.035));
+      backdrop-filter:blur(12px);
+      color:white;
+      cursor:pointer;
+      transition:0.28s;
+      box-shadow:
+        0 10px 28px rgba(0,0,0,0.22),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+      text-align:left;
+    }
+
+    .elementCard:hover {
+      transform:translateY(-4px);
+      box-shadow:
+        0 18px 34px rgba(0,0,0,0.28),
+        0 0 0 1px rgba(255,255,255,0.06);
+    }
+
+    .elementEmoji {
+      font-size:42px;
+      margin-bottom:10px;
+      filter:drop-shadow(0 0 18px rgba(255,255,255,0.28));
+    }
+
+    .elementName {
+      font-size:22px;
+      font-weight:900;
+      letter-spacing:1px;
+      text-shadow:0 0 12px rgba(255,255,255,0.18);
+    }
+
+    .elementDesc {
+      margin-top:10px;
+      font-size:12px;
+      opacity:0.86;
+      line-height:1.7;
+    }
+
+    .elementLocked {
+      opacity:0.42;
+      filter:grayscale(1);
+      cursor:not-allowed;
+    }
+
+    .elementGlow {
+      position:absolute;
+      width:120px;
+      height:120px;
+      border-radius:999px;
+      right:-20px;
+      top:-20px;
+      opacity:0.28;
+      filter:blur(16px);
+    }
+
+    .fireGlow { background:#ef4444; }
+    .waterGlow { background:#38bdf8; }
+    .earthGlow { background:#84cc16; }
+    .thunderGlow { background:#a855f7; }
+    .fighterGlow { background:#f97316; }
+    .gamblerGlow { background:#facc15; }
+    .curseGlow { background:#c026d3; }
+    .windGlow { background:#22c55e; }
+    .iceGlow { background:#67e8f9; }
+    .doppelGlow { background:#e879f9; }
+    .poisonGlow { background:#22c55e; }
+
+    .achievementGrid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+      gap:10px;
+      margin-top:16px;
+    }
+
+    .achievementCard {
+      position:relative;
+      overflow:hidden;
+      padding:14px;
+      border-radius:18px;
+      background:linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03));
+      border:1px solid rgba(255,255,255,0.08);
+      transition:0.25s;
+      box-shadow:0 0 18px rgba(0,0,0,0.22);
+    }
+
+    .achievementCard:hover {
+      transform:translateY(-4px);
+      box-shadow:0 0 28px rgba(255,255,255,0.12);
+    }
+
+    .achievementCompleted {
+      background:linear-gradient(135deg,rgba(250,204,21,0.2),rgba(245,158,11,0.08));
+      border:1px solid rgba(250,204,21,0.28);
+    }
+
+    .achievementReward {
+      margin-top:8px;
+      color:#facc15;
+      font-weight:bold;
+      font-size:15px;
+    }
+
+    .achievementDesc {
+      opacity:0.78;
+      margin-top:6px;
+      line-height:1.45;
+      font-size:12px;
+    }
+
+    .achievementTitle {
+      font-size:16px;
+      font-weight:bold;
+      line-height:1.4;
+    }
+
     .elementSelected {
-      outline: 4px solid #fde047;
-      transform: scale(1.08);
-      box-shadow: 0 0 25px rgba(253,224,71,0.9);
-      background: linear-gradient(135deg,#f59e0b,#facc15);
-      color: black;
-      font-weight: bold;
+      outline:4px solid #fde047;
+      transform:scale(1.06);
+      box-shadow:
+        0 0 30px rgba(253,224,71,0.95),
+        0 0 80px rgba(250,204,21,0.4);
+      background:linear-gradient(145deg,#f59e0b,#fde047);
+      color:black;
+      font-weight:bold;
     }
 
     .jackpotToggle {
       position: fixed;
-      right: 16px;
-      bottom: 16px;
+      right: 8px;
+      bottom: 8px;
       z-index: 5000;
-      padding: 12px 18px;
+      padding: 4px 8px;
       border-radius: 999px;
-      font-size: 16px;
-      font-weight: bold;
-      opacity: 0.82;
-      background: rgba(0,0,0,0.5);
-      color: white;
+      font-size: 10px;
+      font-weight: 600;
+      opacity: 0.08;
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.45);
+      backdrop-filter: blur(4px);
+      transition:0.2s;
+    }
+
+    .jackpotToggle:hover {
+      opacity:0.45;
+    }
+
+    .battleArena {
+      min-height:82vh;
+      position:relative;
+      overflow:hidden;
+      margin-top:20px;
+      padding:24px;
+      border-radius:28px;
+      background:linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03));
+      box-shadow:0 0 40px rgba(0,0,0,0.35);
+    }
+
+    .battleArena::before {
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at top,rgba(239,68,68,0.14),transparent 35%),
+        radial-gradient(circle at bottom,rgba(59,130,246,0.14),transparent 35%);
+      pointer-events:none;
+    }
+
+    .vsText {
+      text-align:center;
+      font-size:82px;
+      font-weight:900;
+      letter-spacing:10px;
+      margin:18px 0;
+      text-shadow:
+        0 0 12px white,
+        0 0 40px #60a5fa,
+        0 0 80px #a855f7;
+      animation:vsPulse 1.8s ease-in-out infinite alternate;
+    }
+
+    @keyframes vsPulse {
+      from {
+        transform:scale(1);
+        filter:brightness(1);
+      }
+
+      to {
+        transform:scale(1.08);
+        filter:brightness(1.2);
+      }
+    }
+
+    .battleCard {
+      position:relative;
+      overflow:hidden;
+      background:linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.05));
+      box-shadow:0 0 24px rgba(0,0,0,0.22);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .battleCard::before {
+      content:"";
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at top left,rgba(255,255,255,0.12),transparent 45%);
+      pointer-events:none;
+    }
+
+    .handButton {
+      width:150px;
+      height:150px;
+      border-radius:999px;
+      font-size:84px;
+      background:linear-gradient(135deg,rgba(255,255,255,0.18),rgba(255,255,255,0.05));
+      color:white;
+      backdrop-filter:blur(10px);
+      border:1px solid rgba(255,255,255,0.1);
+      box-shadow:0 0 24px rgba(0,0,0,0.25);
+    }
+
+    .handButton:hover {
+      transform:translateY(-8px) scale(1.06);
+      box-shadow:0 0 35px rgba(255,255,255,0.2);
     }
 
     .selectedHand {
@@ -433,6 +800,18 @@
       100% { transform: translate(0px,0px); }
     }
 
+    body.theme-fire {
+      background: linear-gradient(135deg,#3b0a0a,#7f1d1d,#dc2626);
+    }
+
+    body.theme-thunder {
+      background: linear-gradient(135deg,#111827,#312e81,#7c3aed);
+    }
+
+    body.theme-curse {
+      background: linear-gradient(135deg,#0f172a,#3b0764,#581c87);
+    }
+
     .impactFlash {
       position: fixed;
       inset: 0;
@@ -629,7 +1008,49 @@
   </style>
 </head>
 <body>
-  <div class="guideBox guideClosed" id="guideBox">
+  <div id="startupGuideOverlay" style="display:flex;position:fixed;inset:0;z-index:9800;background:rgba(15,23,42,0.92);backdrop-filter:blur(12px);padding:24px 14px;overflow-y:auto;align-items:center;justify-content:center;">
+  <div style="width:min(92vw,920px);max-width:920px;margin:auto;background:rgba(255,255,255,0.08);border-radius:32px;padding:clamp(18px,4vw,30px);box-shadow:0 0 60px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.08);box-sizing:border-box;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+      <h1 style="margin:0;font-size:clamp(24px,5vw,32px);line-height:1.3;word-break:break-word;">📖 ルール説明</h1>
+      <button onclick="closeStartupGuide()" style="font-size:18px;padding:10px 18px;">✕</button>
+    </div>
+
+    <div style="font-size:clamp(14px,3.2vw,18px);line-height:1.9;background:rgba(255,255,255,0.04);padding:clamp(16px,3vw,24px);border-radius:22px;word-break:break-word;overflow-wrap:anywhere;">
+      ✊✌️✋ のじゃんけんで戦う対戦ゲーム。<br>
+      勝利すると相手へダメージ。<br><br>
+
+      ✊ グー：高火力（パワー消費）<br>
+      ✌️ チョキ：4ダメージ<br>
+      ✋ パー：2ダメージ + パワー+1<br><br>
+
+      属性ごとに特殊能力あり。<br>
+          HPを0にしたら勝利。<br><br>
+
+          🏆 実績を達成するとコイン獲得。<br>
+          🛒 ショップで属性や背景を購入可能。<br><br>
+
+      📖 詳しい属性説明は早見表から確認できます。<br><br>
+
+🏆 実績を達成するとコイン獲得。<br>
+🛒 ショップで新属性や背景を解放可能。<br>
+強い属性を集めて自分だけの戦い方を作ろう！
+    </div>
+  </div>
+</div>
+
+<div id="guideOverlay" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(15,23,42,0.82);backdrop-filter:blur(10px);padding:40px 24px;overflow-y:auto;">
+  <div style="max-width:900px;margin:0 auto;background:rgba(255,255,255,0.08);border-radius:28px;padding:24px;box-shadow:0 0 40px rgba(0,0,0,0.45);">
+    <div style="display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:rgba(15,23,42,0.95);padding-bottom:12px;z-index:5;">
+      <h2>📖 属性早見表</h2>
+      <button onclick="closeGuideOverlay()">閉じる</button>
+    </div>
+
+    <div id="guideOverlayContent">
+    </div>
+  </div>
+</div>
+
+<div class="guideBox guideClosed" id="guideBox" style="display:none;">
     <button class="guideToggle" onclick="toggleGuideBox()" id="guideToggleBtn">📖</button>
 
     <div class="guideContent">
@@ -740,6 +1161,53 @@
     </div>
 
     <div class="guideSection">
+      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">❄️ 氷</div>
+      <div class="guideSectionBody">
+        <div class="guideItem">
+          グー: 6ダメージ + シールド獲得<br>
+          グー命中で相手は前ターンの手を使用不可<br>
+          チョキ命中で相手の次攻撃-2
+        </div>
+      </div>
+    </div>
+
+    <div class="guideSection">
+      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">🪞 ドッペルゲンガー</div>
+      <div class="guideSectionBody">
+        <div class="guideItem">
+          全攻撃2ダメージ<br>
+          あいこで4ダメ + パワー+1<br>
+          パワー3以上のあいこで7ダメ<br>
+          7ダメ発動時パワー3消費<br>
+          グーでパワー消費なし
+        </div>
+      </div>
+    </div>
+
+    <div class="guideSection">
+      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">☣️ 毒</div>
+      <div class="guideSectionBody">
+        <div class="guideItem">
+          勝利で相手に毒+1<br>
+          ターン終了時に毒ダメージ<br>
+          毒は重複する<br>
+          長期戦で強い
+        </div>
+      </div>
+    </div>
+
+    <div class="guideSection">
+      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">🩸 吸血</div>
+      <div class="guideSectionBody">
+        <div class="guideItem">
+          与えたダメージの半分回復<br>
+          HP10以下で全攻撃+2<br>
+          殴り合いに強い
+        </div>
+      </div>
+    </div>
+
+    <div class="guideSection">
       <div class="guideSectionHeader" onclick="toggleGuideSection(this)">🎲 ギャンブラー</div>
       <div class="guideSectionBody">
         <div class="guideItem">
@@ -753,21 +1221,98 @@
       </div>
     </div>
     </div>
-    </div>
-
-    </div>
   </div>
 
   <div class="container">
-    <h1>✊ 属性じゃんけんバトル ✋</h1>
+    <h1><span style="opacity:0.85;font-size:0.7em;">✦</span> 属性じゃんけんバトル</h1>
+    <div class="titleSub">
+      ELEMENT ROCK PAPER SCISSORS
+    </div>
+
+    
+
+    <div id="achievementScreen" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(15,23,42,0.82);backdrop-filter:blur(10px);padding:40px 24px;overflow-y:auto;">
+      <div style="max-width:1100px;margin:0 auto;background:rgba(255,255,255,0.08);border-radius:28px;padding:24px;box-shadow:0 0 40px rgba(0,0,0,0.45);">
+      <div style="display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:rgba(15,23,42,0.95);padding-bottom:12px;z-index:5;">
+        <h2>🏆 実績一覧</h2>
+        <button onclick="closeAchievementMenu()">閉じる</button>
+      </div>
+
+      <div style="margin-top:18px;">
+        <h3 style="color:#fde047;">🟡 未達成</h3>
+        <div class="achievementGrid" id="achievementList"></div>
+      </div>
+
+      <div style="margin-top:28px;">
+        <h3 style="color:#86efac;">✅ 達成済み</h3>
+        <div class="achievementGrid" id="achievementCompletedList"></div>
+      </div>
+      </div>
+    </div>
+
+    <div id="shopScreen" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(15,23,42,0.82);backdrop-filter:blur(10px);padding:40px 24px;overflow-y:auto;">
+      <div style="max-width:1000px;margin:0 auto;background:rgba(255,255,255,0.08);border-radius:28px;padding:24px;box-shadow:0 0 40px rgba(0,0,0,0.45);">
+      <div style="display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:rgba(15,23,42,0.95);padding-bottom:12px;z-index:5;">
+        <h2>🛒 ショップ</h2>
+        <button onclick="closeShop()">閉じる</button>
+      </div>
+
+      <div class="buttons" style="margin-top:16px;margin-bottom:18px;justify-content:flex-start;">
+        <button onclick="openElementShop()" id="elementShopButton">
+          🔓 属性ショップ
+        </button>
+
+        <button onclick="openBackgroundShop()" id="backgroundShopButton">
+          🎨 背景ショップ
+        </button>
+      </div>
+
+      <div id="shopList"></div>
+      </div>
+    </div>
 
     <div id="modeScreen">
+      <div style="text-align:center;margin-bottom:18px;">
+        <div style="font-size:18px;font-weight:bold;margin-bottom:12px;">
+          🪙 <span id="coinText">0</span>
+        </div>
+
+        <div class="buttons" style="margin-top:0;margin-bottom:12px;">
+          <button onclick="openAchievementMenu()">🏆 実績</button>
+          <button onclick="openGuideOverlay()">📖 早見表</button>
+          <button onclick="currentShopTab='element';openShop()">🔓 属性ショップ</button>
+          <button onclick="currentShopTab='background';openShop()">🎨 背景ショップ</button>
+        </div>
+      </div>
       <h2>モード選択</h2>
 
       <div class="buttons">
-        <button onclick="selectMode('cpu')">🤖 CPU戦</button>
-        <button onclick="selectMode('friend')">👥 友達と戦う</button>
-        <button onclick="openOnlineMenu()">🌐 オンライン</button>
+        <button class="modeCard" onclick="selectMode('cpu')">
+          <div class="modeGlow cpuGlow"></div>
+          <div class="modeEmoji">🤖</div>
+          <div class="modeTitle">CPU戦</div>
+          <div class="modeDesc">
+            AIとの真剣勝負
+          </div>
+        </button>
+
+        <button class="modeCard" onclick="selectMode('friend')">
+          <div class="modeGlow friendGlow"></div>
+          <div class="modeEmoji">👥</div>
+          <div class="modeTitle">友達対戦</div>
+          <div class="modeDesc">
+            1台で対戦プレイ
+          </div>
+        </button>
+
+        <button class="modeCard" onclick="openOnlineMenu()">
+          <div class="modeGlow onlineGlow"></div>
+          <div class="modeEmoji">🌐</div>
+          <div class="modeTitle">ルーム対戦</div>
+          <div class="modeDesc">
+            合言葉で友達と対戦
+          </div>
+        </button>
         
       </div>
     </div>
@@ -784,7 +1329,7 @@
       class="jackpotToggle"
       onclick="toggleMaxPowerMode()"
       id="maxPowerButton"
-      style="bottom:72px;"
+      style="bottom:34px;right:8px;"
     >
       ⚡ MAX OFF
     </button>
@@ -825,24 +1370,41 @@
     </div>
 
     <div id="elementScreen" style="display:none;">
-      <h2 id="elementSelectTitle">PLAYER1 の属性を選択</h2>
+      <div style="
+        margin-bottom:26px;
+        padding:10px 4px 0;
+      ">
+        <div style="
+        font-size:11px;
+        letter-spacing:5px;
+        opacity:0.45;
+        margin-bottom:6px;
+        font-weight:700;
+      ">
+        SELECT YOUR ELEMENT
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:18px;">
+        <h2 id="elementSelectTitle">PLAYER1 の属性を選択</h2>
 
-      <div class="buttons">
-        <button class="elementButton" onclick="selectElement('fire',this)">🔥 炎</button>
-        <button class="elementButton" onclick="selectElement('water',this)">💧 水</button>
-        <button class="elementButton" onclick="selectElement('earth',this)">🪨 土</button>
-        <button class="elementButton" onclick="selectElement('thunder',this)">⚡ 雷</button>
-        <button class="elementButton" onclick="selectElement('fighter',this)">🥊 格闘家</button>
-        <button class="elementButton" onclick="selectElement('gambler',this)">🎲 ギャンブラー</button>
-        <button class="elementButton" onclick="selectElement('curse',this)">🕯️ 呪術</button>
-        <button class="elementButton" onclick="selectElement('wind',this)">🌪️ 風</button>
+        <button onclick="returnToModeSelect()">
+          🏠 戻る
+        </button>
+      </div>
+
+      <div class="elementGrid" id="elementButtons"></div>
       </div>
     </div>
 
     <div id="gameScreen" style="display:none;">
+      <div class="battleArena">
+      <div style="text-align:center;opacity:0.7;letter-spacing:6px;font-size:18px;">
+        ELEMENT BATTLE
+      </div>
+
+      <div class="vsText">VS</div>
 
       <div class="statusRow">
-        <div class="card">
+        <div class="card battleCard">
           <div class="label" id="playerNameLabel">PLAYER HP</div>
           <div class="big" id="playerHPText">30</div>
           <div class="bar">
@@ -850,7 +1412,7 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card battleCard">
           <div class="label" id="enemyNameLabel">対戦相手 HP</div>
           <div class="big" id="cpuHPText">30</div>
           <div class="bar">
@@ -860,7 +1422,7 @@
       </div>
 
       <div class="statusRow">
-        <div class="card">
+        <div class="card battleCard">
           <div class="label" id="playerElementNameLabel">PLAYER</div>
           <div class="big" id="playerElement"></div>
           <div id="playerEffect">効果なし</div>
@@ -870,7 +1432,7 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card battleCard">
           <div class="label" id="enemyElementLabel">対戦相手</div>
           <div class="big" id="cpuElement"></div>
           <div id="cpuEffect">効果なし</div>
@@ -887,9 +1449,9 @@
       </div>
 
       <div class="buttons">
-        <button class="handButton" onclick="selectHand(0,this)">✊ グー</button>
-        <button class="handButton" onclick="selectHand(1,this)">✌️ チョキ</button>
-        <button class="handButton" onclick="selectHand(2,this)">✋ パー</button>
+        <button class="handButton" onclick="selectHand(0,this)">✊</button>
+        <button class="handButton" onclick="selectHand(1,this)">✌️</button>
+        <button class="handButton" onclick="selectHand(2,this)">✋</button>
       </div>
 
       <div class="buttons">
@@ -898,9 +1460,10 @@
         </button>
       </div>
 
-      <div class="result" id="result">
+      <div class="result" id="result" style="font-size:30px;font-weight:bold;text-shadow:0 0 12px rgba(255,255,255,0.22);">
         バトル開始！
       </div>
+    </div>
     </div>
   </div>
 
@@ -912,6 +1475,7 @@
   <div id="shockwaveEffect"></div>
   <div id="moneyRainEffect"></div>
   <div id="curseEffect"></div>
+  <div id="achievementPopup"></div>
 
   <div class="cutin hidden" id="cutin">
     <div id="cutinText">じゃんけん…！</div>
@@ -990,7 +1554,11 @@
       fighter:"🥊 格闘家",
       gambler:"🎲 ギャンブラー",
       curse:"🕯️ 呪術",
-      wind:"🌪️ 風"
+      wind:"🌪️ 風",
+      ice:"❄️ 氷",
+      doppel:"🪞 ドッペル",
+      poison:"☣️ 毒",
+      vampire:"🩸 吸血"
     };
 
     let playerElement = "";
@@ -1040,25 +1608,767 @@
     let playerCursePowerMode = 3;
     let cpuCursePowerMode = 3;
 
+    let coins = Number(localStorage.getItem("coins") || 0);
+
+    let ownedSkins = JSON.parse(localStorage.getItem("ownedSkins") || '["default"]');
+
+    let unlockedElements = JSON.parse(localStorage.getItem("unlockedElements") || '["fire","water","earth","thunder"]');
+    let selectedSkin = localStorage.getItem("selectedSkin") || "default";
+
+    const elementUnlockPrice = 150;
+
+    const unlockableElements = {
+      fighter:"🥊 格闘家",
+      gambler:"🎲 ギャンブラー",
+      curse:"🕯️ 呪術",
+      wind:"🌪️ 風",
+      ice:"❄️ 氷",
+      doppel:"🪞 ドッペル",
+      poison:"☣️ 毒",
+      vampire:"🩸 吸血"
+    };
+
+    const shopItems = {
+      fireSkin:{
+        name:"🔥 炎テーマ",
+        price:120,
+        className:"theme-fire"
+      },
+      thunderSkin:{
+        name:"⚡ 雷テーマ",
+        price:180,
+        className:"theme-thunder"
+      },
+      curseSkin:{
+        name:"🕯️ 呪術テーマ",
+        price:250,
+        className:"theme-curse"
+      }
+    };
+
+    let achievements = JSON.parse(localStorage.getItem("achievements") || "{}");
+
+    let stats = JSON.parse(localStorage.getItem("stats") || JSON.stringify({
+      cpuWins:0,
+      onlineWins:0,
+      jackpotCount:0,
+      maxDamage:0,
+      fireBurst:0,
+      thunder20:0,
+      windAttack:0,
+      earthMax:0,
+      curseSeal:0,
+      gamble15:0,
+      shopBuy:0,
+      poisonWins:0,
+      vampireHeal:0,
+      doppelDraw:0,
+      iceFreeze:0,
+      winStreak:0,
+      totalMatches:0
+    }));
+
+    const damageMilestones = [10,12,14,16,18,20];
+
+    const achievementList = {
+      poisonMaster:{
+        name:"☣️ 毒使い",
+        desc:"毒ダメージで3回勝利する",
+        reward:80,
+        check:()=>stats.poisonWins >= 3,
+        visible:true
+      },
+
+      vampireLord:{
+        name:"🩸 不死者",
+        desc:"吸血で合計30回復する",
+        reward:100,
+        check:()=>stats.vampireHeal >= 30,
+        visible:true
+      },
+
+      mirrorMaster:{
+        name:"🪞 完全模倣",
+        desc:"ドッペルであいこを10回発生",
+        reward:70,
+        check:()=>stats.doppelDraw >= 10,
+        visible:true
+      },
+
+      frozenHeart:{
+        name:"❄️ 氷結支配",
+        desc:"相手を5回凍結する",
+        reward:90,
+        check:()=>stats.iceFreeze >= 5,
+        visible:true
+      },
+
+      streak5:{
+        name:"🔥 5連勝",
+        desc:"5連勝する",
+        reward:120,
+        check:()=>stats.winStreak >= 5,
+        visible:true
+      },
+
+      veteran:{
+        name:"⚔️ 歴戦の戦士",
+        desc:"50試合プレイする",
+        reward:150,
+        check:()=>stats.totalMatches >= 50,
+        visible:true
+      },
+      firstPlay:{
+        name:"🎮 はじめての戦い",
+        desc:"初めてゲームを遊ぶ",
+        reward:100,
+        check:()=>true,
+        visible:true
+      },
+
+      overkill:{
+        name:"💀 オーバーキル",
+        desc:"20以上のダメージを与える",
+        reward:120,
+        check:()=>stats.maxDamage >= 20,
+        visible:true
+      },
+
+      burstMode:{
+        name:"🔥 バースト開始",
+        desc:"炎属性でHP10以下になる",
+        reward:40,
+        check:()=>stats.fireBurst >= 1,
+        visible:true
+      },
+
+      thunderGod:{
+        name:"⚡ 雷神",
+        desc:"雷属性で20ダメージを与える",
+        reward:80,
+        check:()=>stats.thunder20 >= 1,
+        visible:true
+      },
+
+      windMaster:{
+        name:"🌪️ 疾風",
+        desc:"風速3以上で攻撃する",
+        reward:50,
+        check:()=>stats.windAttack >= 1,
+        visible:true
+      },
+
+      fortress:{
+        name:"🪨 要塞",
+        desc:"土属性の強化を最大まで育てる",
+        reward:70,
+        check:()=>stats.earthMax >= 1,
+        visible:true
+      },
+
+      curseSeal:{
+        name:"🕯️ 呪縛",
+        desc:"パー封印を成功させる",
+        reward:60,
+        check:()=>stats.curseSeal >= 1,
+        visible:true
+      },
+
+      gamblerBig:{
+        name:"🎲 一攫千金",
+        desc:"ギャンブラーで15以上のダメージ",
+        reward:90,
+        check:()=>stats.gamble15 >= 1,
+        visible:true
+      },
+
+      allElements:{
+        name:"🌈 属性コレクター",
+        desc:"全属性を解放する",
+        reward:150,
+        check:()=>unlockedElements.includes('fighter') && unlockedElements.includes('gambler') && unlockedElements.includes('curse') && unlockedElements.includes('wind'),
+        visible:true
+      },
+
+      firstShop:{
+        name:"🛒 買い物上手",
+        desc:"初めてショップで購入する",
+        reward:50,
+        check:()=>stats.shopBuy >= 1,
+        visible:true
+      },
+
+      rich:{
+        name:"👑 富豪",
+        desc:"500コイン所持する",
+        reward:100,
+        check:()=>coins >= 500,
+        visible:true
+      },
+
+      hunter:{
+        name:"🏆 実績ハンター",
+        desc:"実績を10個解除する",
+        reward:120,
+        check:()=>Object.keys(achievements).length >= 10,
+        visible:true
+      },
+
+      jackpot:{
+        name:"🎰 豪運",
+        desc:"確変を発動",
+        reward:40,
+        check:()=>stats.jackpotCount >= 1,
+        visible:true
+      }
+    };
+
+    const cpuWinMilestones = [1,2,5,10,20,50,100];
+    const onlineWinMilestones = [1,2,5,10,20,50,100];
+
+    cpuWinMilestones.forEach((num,index)=>{
+      achievementList[`cpu${num}`] = {
+        name:`🤖 CPU ${num}勝`,
+        desc:`CPU戦で${num}勝する`,
+        reward:num <= 2
+          ? num * 10
+          : num <= 10
+            ? num * 5
+            : num * 4,
+        check:()=>stats.cpuWins >= num,
+        visible:index === 0
+      };
+    });
+
+    onlineWinMilestones.forEach((num,index)=>{
+      achievementList[`online${num}`] = {
+        name:`🌐 ONLINE ${num}勝`,
+        desc:`オンライン戦で${num}勝する`,
+        reward:num <= 2
+          ? num * 15
+          : num <= 10
+            ? num * 8
+            : num * 6,
+        check:()=>stats.onlineWins >= num,
+        visible:index === 0
+      };
+    });
+
+    damageMilestones.forEach((num,index)=>{
+      achievementList[`damage${num}`] = {
+        name:`💥 ${num}ダメージ`,
+        desc:`1回で${num}以上ダメージを与える`,
+        reward:(num - 8) * 10,
+        check:()=>stats.maxDamage >= num,
+        visible:index === 0
+      };
+    });
+
+    let playerPoison = 0;
+    let cpuPoison = 0;
+
     let playerWindSpeed = 0;
+    let playerIceDebuff = 0;
+    let cpuIceDebuff = 0;
+    let playerIceShield = 0;
+    let cpuIceShield = 0;
     let cpuWindSpeed = 0;
 
     let playerLastHand = null;
+    let playerFrozenHand = null;
+    let cpuFrozenHand = null;
     let cpuLastHand = null;
+
+    function applySkin(){
+      document.body.classList.remove(
+        "theme-fire",
+        "theme-thunder",
+        "theme-curse"
+      );
+
+      if(selectedSkin !== "default"){
+        document.body.classList.add(shopItems[selectedSkin].className);
+      }
+    }
+
+    function saveData(){
+      localStorage.setItem("coins", coins);
+      localStorage.setItem("achievements", JSON.stringify(achievements));
+      localStorage.setItem("stats", JSON.stringify(stats));
+      localStorage.setItem("ownedSkins", JSON.stringify(ownedSkins));
+      localStorage.setItem("selectedSkin", selectedSkin);
+      localStorage.setItem("unlockedElements", JSON.stringify(unlockedElements));
+    }
+
+    function updateCoinUI(){
+      document.getElementById("coinText").innerHTML = coins;
+    }
+
+    function unlockAchievement(id){
+      if(achievements[id]) return;
+
+      const ach = achievementList[id];
+
+      if(!ach || !ach.check()) return;
+
+      achievements[id] = true;
+      coins += ach.reward;
+
+      saveData();
+      updateCoinUI();
+    applySkin();
+
+      document.getElementById("achievementPopup").innerHTML = `
+        <div style="
+          position:fixed;
+          top:40px;
+          left:50%;
+          transform:translateX(-50%);
+          background:linear-gradient(135deg,#facc15,#f59e0b);
+          color:black;
+          padding:22px 34px;
+          border-radius:20px;
+          font-size:28px;
+          font-weight:bold;
+          z-index:99999;
+          box-shadow:0 0 30px rgba(250,204,21,0.9);
+        ">
+          🏆 ${ach.name} 解除！<br>
+          +${ach.reward} COIN
+        </div>
+      `;
+
+      setTimeout(()=>{
+        document.getElementById("achievementPopup").innerHTML = "";
+      },2600);
+    }
+
+    function checkAchievements(){
+      for(const id in achievementList){
+        unlockAchievement(id);
+      }
+    }
+
+    function openAchievementMenu(){
+      const screen = document.getElementById("achievementScreen");
+      screen.style.display = "block";
+
+      let html = "";
+      let completedHtml = "";
+
+      for(const id in achievementList){
+        const ach = achievementList[id];
+
+        if(id.startsWith("cpu")){
+          const current = Number(id.replace("cpu",""));
+          const index = cpuWinMilestones.indexOf(current);
+
+          if(index > 0){
+            const prev = `cpu${cpuWinMilestones[index - 1]}`;
+            ach.visible = !!achievements[prev];
+          }
+        }
+
+        if(id.startsWith("online")){
+          const current = Number(id.replace("online",""));
+          const index = onlineWinMilestones.indexOf(current);
+
+          if(index > 0){
+            const prev = `online${onlineWinMilestones[index - 1]}`;
+            ach.visible = !!achievements[prev];
+          }
+        }
+
+        if(id.startsWith("damage")){
+          const current = Number(id.replace("damage",""));
+          const index = damageMilestones.indexOf(current);
+
+          if(index > 0){
+            const prev = `damage${damageMilestones[index - 1]}`;
+            ach.visible = !!achievements[prev];
+          }
+        }
+
+        if(!ach.visible) continue;
+
+        const cardHtml = `
+          <div class="achievementCard ${achievements[id] ? 'achievementCompleted' : ''}">
+            <div class="achievementTitle">
+              ${achievements[id] ? '✅' : '⬜'} ${ach.name}
+            </div>
+
+            <div class="achievementDesc">
+              ${ach.desc}
+            </div>
+
+            <div class="achievementReward">
+              🪙 ${ach.reward}
+            </div>
+          </div>
+        `;
+
+        if(achievements[id]){
+          completedHtml += cardHtml;
+        }
+        else {
+          html += cardHtml;
+        }
+      }
+
+      document.getElementById("achievementList").innerHTML = html || `
+        <div style="opacity:0.7;margin-top:10px;">
+          すべて達成済み！
+        </div>
+      `;
+
+      document.getElementById("achievementCompletedList").innerHTML = completedHtml || `
+        <div style="opacity:0.7;margin-top:10px;">
+          まだありません
+        </div>
+      `;
+    }
+
+    
+
+    
+
+    function renderElementButtons(){
+      const allElements = [
+        {
+          id:'fire',
+          emoji:'🔥',
+          name:'炎',
+          desc:'高火力とバーストで押し切る',
+          glow:'fireGlow',
+          unlocked:true
+        },
+        {
+          id:'water',
+          emoji:'💧',
+          name:'水',
+          desc:'回復と安定性で粘る',
+          glow:'waterGlow',
+          unlocked:true
+        },
+        {
+          id:'earth',
+          emoji:'🪨',
+          name:'土',
+          desc:'防御と永続強化で成長',
+          glow:'earthGlow',
+          unlocked:true
+        },
+        {
+          id:'thunder',
+          emoji:'⚡',
+          name:'雷',
+          desc:'超火力チャージ型',
+          glow:'thunderGlow',
+          unlocked:true
+        },
+        {
+          id:'fighter',
+          emoji:'🥊',
+          name:'格闘家',
+          desc:'低燃費ラッシュ',
+          glow:'fighterGlow',
+          unlocked:unlockedElements.includes('fighter')
+        },
+        {
+          id:'gambler',
+          emoji:'🎲',
+          name:'ギャンブラー',
+          desc:'運命を賭けた一撃',
+          glow:'gamblerGlow',
+          unlocked:unlockedElements.includes('gambler')
+        },
+        {
+          id:'curse',
+          emoji:'🕯️',
+          name:'呪術',
+          desc:'封印と制圧の呪い',
+          glow:'curseGlow',
+          unlocked:unlockedElements.includes('curse')
+        },
+        {
+          id:'wind',
+          emoji:'🌪️',
+          name:'風',
+          desc:'手を変えて加速する',
+          glow:'windGlow',
+          unlocked:unlockedElements.includes('wind')
+        },
+        {
+          id:'ice',
+          emoji:'❄️',
+          name:'氷',
+          desc:'弱体と防御の属性',
+          glow:'iceGlow',
+          unlocked:unlockedElements.includes('ice')
+        },
+        {
+          id:'doppel',
+          emoji:'🪞',
+          name:'ドッペル',
+          desc:'あいこを支配する',
+          glow:'doppelGlow',
+          unlocked:unlockedElements.includes('doppel')
+        },
+        {
+          id:'poison',
+          emoji:'☣️',
+          name:'毒',
+          desc:'継続ダメージで追い詰める',
+          glow:'poisonGlow',
+          unlocked:unlockedElements.includes('poison')
+        },
+        {
+          id:'vampire',
+          emoji:'🩸',
+          name:'吸血',
+          desc:'吸収回復で粘り勝つ',
+          glow:'curseGlow',
+          unlocked:unlockedElements.includes('vampire')
+        }
+      ];
+
+      let html = '';
+
+      allElements.forEach(el=>{
+        html += `
+          <button
+            class="elementCard ${el.unlocked ? '' : 'elementLocked'}"
+            ${el.unlocked ? `onclick="selectElement('${el.id}',this)"` : 'disabled'}
+          >
+            <div class="elementGlow ${el.glow}"></div>
+
+            <div class="elementEmoji">
+              ${el.unlocked ? el.emoji : '🔒'}
+            </div>
+
+            <div class="elementName">
+              ${el.name}
+            </div>
+
+            <div class="elementDesc">
+              ${el.unlocked ? el.desc : 'ショップで解放'}
+            </div>
+          </button>
+        `;
+      });
+
+      document.getElementById('elementButtons').innerHTML = html;
+    }
+
+    let currentShopTab = "element";
+
+    function openElementShop(){
+      currentShopTab = "element";
+      openShop();
+    }
+
+    function openBackgroundShop(){
+      currentShopTab = "background";
+      openShop();
+    }
+
+    function openShop(){
+      document.getElementById("shopScreen").style.display = "block";
+
+      document.getElementById("elementShopButton").classList.remove("selectedHand");
+      document.getElementById("backgroundShopButton").classList.remove("selectedHand");
+
+      document.getElementById(
+        currentShopTab === "element"
+          ? "elementShopButton"
+          : "backgroundShopButton"
+      ).classList.add("selectedHand");
+
+      let html = "";
+
+      if(currentShopTab === "element"){
+        html += `
+          <div style="margin-top:14px;font-size:20px;font-weight:bold;">
+            🔓 属性ショップ
+          </div>
+        `;
+
+        for(const elementId in unlockableElements){
+          const owned = unlockedElements.includes(elementId);
+
+          html += `
+            <div style="
+              margin-top:14px;
+              padding:12px;
+              border-radius:16px;
+              background:rgba(255,255,255,0.06);
+            ">
+              <div style="font-size:18px;font-weight:bold;">
+                ${unlockableElements[elementId]}
+              </div>
+
+              <div style="margin-top:6px;color:#facc15;font-weight:bold;font-size:14px;">
+                🪙 ${elementUnlockPrice}
+              </div>
+
+              <div style="margin-top:8px;">
+                ${owned
+                  ? `<button disabled>✅ 解放済み</button>`
+                  : `<button onclick="buyElement('${elementId}')">解放</button>`}
+              </div>
+            </div>
+          `;
+        }
+      }
+      else {
+        html += `
+          <div style="margin-top:14px;font-size:20px;font-weight:bold;">
+            🎨 背景ショップ
+          </div>
+        `;
+      }
+
+      if(currentShopTab === "background"){
+        for(const id in shopItems){
+          const item = shopItems[id];
+          const owned = ownedSkins.includes(id);
+          const equipped = selectedSkin === id;
+
+          html += `
+            <div style="
+              margin-top:14px;
+              padding:12px;
+              border-radius:16px;
+              background:rgba(255,255,255,0.06);
+            ">
+              <div style="font-size:18px;font-weight:bold;">
+                ${item.name}
+              </div>
+
+              <div style="margin-top:6px;color:#facc15;font-weight:bold;font-size:14px;">
+                🪙 ${item.price}
+              </div>
+
+              <div style="margin-top:8px;">
+                ${owned
+                  ? `<button onclick="equipSkin('${id}')">
+                      ${equipped ? '✅ 装備中' : '装備'}
+                    </button>`
+                  : `<button onclick="buySkin('${id}')">
+                      購入
+                    </button>`}
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      document.getElementById("shopList").innerHTML = html;
+    }
+
+    function buyElement(id){
+      stats.shopBuy += 1;
+      checkAchievements();
+      if(coins < elementUnlockPrice) return;
+
+      coins -= elementUnlockPrice;
+      unlockedElements.push(id);
+
+      saveData();
+      updateCoinUI();
+      renderElementButtons();
+      openShop();
+    }
+
+    function buySkin(id){
+      stats.shopBuy += 1;
+      checkAchievements();
+      const item = shopItems[id];
+
+      if(coins < item.price) return;
+
+      coins -= item.price;
+      ownedSkins.push(id);
+
+      saveData();
+      updateCoinUI();
+      openShop();
+    }
+
+    function equipSkin(id){
+      selectedSkin = id;
+      saveData();
+      applySkin();
+      openShop();
+    }
+
+    function closeShop(){
+      document.getElementById("shopScreen").style.display = "none";
+    }
+
+    function closeAchievementMenu(){
+      document.getElementById("achievementScreen").style.display = "none";
+    }
 
     function toggleGuideSection(header){
       header.parentElement.classList.toggle("open");
     }
 
     function toggleGuideBox(){
-      const box = document.getElementById("guideBox");
-      const btn = document.getElementById("guideToggleBtn");
+      return;
+    }
 
-      box.classList.toggle("guideClosed");
+    function openGuideOverlay(){
+      const overlay = document.getElementById("guideOverlay");
+      const content = document.querySelector("#guideBox .guideContent");
 
-      btn.innerHTML = box.classList.contains("guideClosed")
-        ? "📖"
-        : "✖";
+      const temp = document.createElement('div');
+      temp.innerHTML = content.innerHTML;
+
+      const sections = temp.querySelectorAll('.guideSection');
+
+      const allowedMap = {
+        '🔥 炎':'fire',
+        '💧 水':'water',
+        '🌪️ 風':'wind',
+        '🪨 土':'earth',
+        '⚡ 雷':'thunder',
+        '🕯️ 呪術':'curse',
+        '🥊 格闘家':'fighter',
+        '❄️ 氷':'ice',
+        '🪞 ドッペルゲンガー':'doppel',
+        '🎲 ギャンブラー':'gambler',
+        '☣️ 毒':'poison',
+        '🩸 吸血':'vampire'
+      };
+
+      sections.forEach(section=>{
+        const header = section.querySelector('.guideSectionHeader');
+
+        if(!header) return;
+
+        const text = header.textContent.trim();
+
+        if(text.includes('ルール説明')) return;
+
+        const key = allowedMap[text];
+
+        if(key && !unlockedElements.includes(key)){
+          section.remove();
+        }
+      });
+
+      document.getElementById("guideOverlayContent").innerHTML = temp.innerHTML;
+
+      overlay.style.display = "block";
+    }
+
+    function closeGuideOverlay(){
+      document.getElementById("guideOverlay").style.display = "none";
+    }
+
+    function closeStartupGuide(){
+      document.getElementById("startupGuideOverlay").style.display = "none";
     }
 
     function toggleMaxPowerMode(){
@@ -1123,11 +2433,14 @@
     function openOnlineMenu(){
       document.getElementById("modeScreen").style.display = "none";
       document.getElementById("onlineScreen").style.display = "block";
+      updateMenuButtons();
     }
 
     function closeOnlineMenu(){
       document.getElementById("onlineScreen").style.display = "none";
       document.getElementById("modeScreen").style.display = "block";
+      updateMenuButtons();
+      updateMenuButtons();
     }
 
     function createOnlineRoom(){
@@ -1208,18 +2521,23 @@
       }
     }
 
+    function updateMenuButtons(){
+      // モード画面へ統合済みのため現在は空関数
+      return;
+    }
+
     function selectMode(mode){
       gameMode = mode;
 
       document.getElementById("modeScreen").style.display = "none";
-      document.getElementById("modeScreen").style.display = "none";
+      updateMenuButtons();
       document.getElementById("onlineScreen").style.display = "none";
       document.getElementById("waitingRoom").style.display = "none";
       document.getElementById("elementScreen").style.display = "block";
     }
 
     function selectElement(element,button){
-      document.querySelectorAll('.elementButton').forEach(btn=>{
+      document.querySelectorAll('.elementCard').forEach(btn=>{
         btn.classList.remove('elementSelected');
       });
 
@@ -1306,6 +2624,8 @@
       // BGM停止中
 
       if(playerElement === "fire" && playerHP <= 10){
+        stats.fireBurst += 1;
+        checkAchievements();
         let flames = "";
 
         for(let i=0;i<12;i++){
@@ -1326,6 +2646,7 @@
     }
 
     function updateUI(){
+      if(!document.getElementById("playerEffect")) return;
       document.getElementById("playerHPText").innerHTML = playerHP;
       document.getElementById("cpuHPText").innerHTML = cpuHP;
 
@@ -1389,37 +2710,96 @@
         document.getElementById("cpuElement").classList.remove("kakuhen");
       }
 
-      document.getElementById("playerEffect").innerHTML =
-        playerElement === "earth"
-          ? `🪨 攻+${playerEarthBoost} 防-${playerEarthShield}`
-          : playerEarth
-            ? "🪨 次+2"
-            : playerThunder
-              ? `⚡ 雷強化 (${3 - playerThunderScissors}回)`
-              : playerElement === "fire"
-                ? `${playerHP <= 10 ? "🔥🔥 バースト" : "🔥"} グー+${playerFireBoost}`
-                : playerElement === "wind"
-                  ? `🌪️ 風速 ${playerWindSpeed}`
-                  : playerElement === "curse"
-                  ? `🕯️ 呪 ${cpuCurseTurns}T ${playerSealPar ? "| ✋封印" : ""}
-                     ${playerCurseMaxPower === 2 ? '<div class="curseWarning">⚠️ 最大パワーが2に低下</div>' : ''}`
-                  : "効果なし";
+      document.getElementById("playerEffect").innerHTML = getElementEffectText(true);
 
-      document.getElementById("cpuEffect").innerHTML =
-        cpuElement === "earth"
-          ? `🪨 攻+${cpuEarthBoost} 防-${cpuEarthShield}`
-          : cpuEarth
-            ? "🪨 次+2"
-            : cpuThunder
-              ? `⚡ 雷強化 (${3 - cpuThunderScissors}回)`
-              : cpuElement === "fire"
-                ? `${cpuHP <= 10 ? "🔥🔥 バースト" : "🔥"} グー+${cpuFireBoost}`
-                : cpuElement === "wind"
-                  ? `🌪️ 風速 ${cpuWindSpeed}`
-                  : cpuElement === "curse"
-                  ? `🕯️ 呪 ${playerCurseTurns}T ${cpuSealPar ? "| ✋封印" : ""}
-                     ${cpuCurseMaxPower === 2 ? '<div class="curseWarning">⚠️ 最大パワーが2に低下</div>' : ''}`
-                  : "効果なし";
+      document.getElementById("cpuEffect").innerHTML = getElementEffectText(false);
+    }
+
+    function getElementEffectText(isPlayer){
+      const element = isPlayer ? playerElement : cpuElement;
+      const earthShield = isPlayer ? playerEarthShield : cpuEarthShield;
+      const earthBoost = isPlayer ? playerEarthBoost : cpuEarthBoost;
+      const thunder = isPlayer ? playerThunder : cpuThunder;
+      const thunderScissors = isPlayer ? playerThunderScissors : cpuThunderScissors;
+      const kakuhen = isPlayer ? playerKakuhen : cpuKakuhen;
+      const curseTurns = isPlayer ? cpuCurseTurns : playerCurseTurns;
+      const seal = isPlayer ? playerSealPar : cpuSealPar;
+      const wind = isPlayer ? playerWindSpeed : cpuWindSpeed;
+      const frozenHand = isPlayer ? cpuFrozenHand : playerFrozenHand;
+      const iceShield = isPlayer ? playerIceShield : cpuIceShield;
+      const iceDebuff = isPlayer ? playerIceDebuff : cpuIceDebuff;
+      const fireBoost = isPlayer ? playerFireBoost : cpuFireBoost;
+      const earthCount = isPlayer ? playerEarthCount : cpuEarthCount;
+
+      
+
+      if(element === "fire"){
+        return `🔥 グー:${8 + fireBoost}ダメ ${fireBoost > 0 ? `| 強化+${fireBoost}` : ''}<br>
+        ${isPlayer ? playerHP : cpuHP}HP ${((isPlayer ? playerHP : cpuHP) <= 10) ? '| 🔥バースト中' : ''}`;
+      }
+
+      if(element === "water"){
+        return "💧 あいこ: 回復+パワー<br>✊命中時 2〜4回復";
+      }
+
+      if(element === "earth"){
+        return `🪨 防御:${earthShield} | 攻撃:${earthBoost}<br>
+        強化段階:${earthCount}`;
+      }
+
+      if(element === "thunder"){
+        return `⚡ ${thunder ? '20ダメージ待機中' : '通常帯電'}<br>
+        ✌️強化回数:${thunderScissors}/3`;
+      }
+
+      if(element === "fighter"){
+        return "🥊 ✊消費1 | ✋で+2パワー<br>最大パワー4";
+      }
+
+      if(element === "gambler"){
+        return `${kakuhen ? '🎰 確変中 88%消費なし' : '🎲 超運ゲー属性'}<br>
+        ✊で超火力抽選`;
+      }
+
+      if(element === "curse"){
+        return `🕯️ パワー封印:${curseTurns}T<br>
+        ${seal ? '✋封印中' : '✋封印なし'}`;
+      }
+
+      if(element === "wind"){
+        return `🌪️ 風速:${wind}<br>
+        ${wind >= 3 ? '⚔️ 次攻撃+4' : '手変更で加速'}`;
+      }
+
+      if(element === "ice"){
+        const freezeText = frozenHand !== null
+          ? `❄️ 封印:${hands[frozenHand]}`
+          : '❄️ 封印なし';
+
+        return `${freezeText}<br>
+        🛡️ シールド:${iceShield} | 弱体:${iceDebuff}`;
+      }
+
+      if(element === "doppel"){
+        return `🪞 あいこ:4ダメ+1P<br>
+        3Pあいこ:7ダメ`;
+      }
+
+      if(element === "poison"){
+        const poison = isPlayer ? cpuPoison : playerPoison;
+
+        return `☣️ 相手毒:${poison}<br>
+        ターン終了時に継続ダメ`;
+      }
+
+      if(element === "vampire"){
+        const hp = isPlayer ? playerHP : cpuHP;
+
+        return `🩸 与ダメの半分回復<br>
+        ${hp <= 10 ? '⚔️ 全攻撃+2' : '通常状態'}`;
+      }
+
+      return "効果なし";
     }
 
     function getAttack(hand, element, power, earth, thunder, isPlayer){
@@ -1483,6 +2863,8 @@
 
               if(playerEarthCount === 3){
                 playerEarthBoost += 2;
+                stats.earthMax += 1;
+                checkAchievements();
               }
 
               if(playerEarthCount > 3 && (playerEarthCount - 3) % 2 === 0){
@@ -1513,6 +2895,46 @@
             damage = 7;
           }
 
+          if(element === "poison") {
+            damage = 5;
+          }
+
+          if(element === "vampire") {
+            damage = 6;
+          }
+
+          if(element === "ice") {
+            damage = 6;
+
+            const targetLastHand = isPlayer
+              ? cpuLastHand
+              : playerLastHand;
+
+            if(targetLastHand !== null){
+              if(isPlayer){
+                stats.iceFreeze += 1;
+              }
+              if(isPlayer){
+                cpuFrozenHand = targetLastHand;
+              }
+              else {
+                playerFrozenHand = targetLastHand;
+              }
+            }
+
+            if(isPlayer){
+              playerIceShield = 2;
+            }
+            else {
+              cpuIceShield = 2;
+            }
+          }
+
+          if(element === "doppel") {
+            damage = 2;
+            newPower = power;
+          }
+
           if(element === "wind") {
             damage = 5;
 
@@ -1522,6 +2944,11 @@
 
             if(speed >= 3){
               damage += 4;
+
+              if(isPlayer){
+                stats.windAttack += 1;
+                checkAchievements();
+              }
 
               if(isPlayer){
                 playerWindSpeed = 0;
@@ -1570,6 +2997,8 @@
 
               if(isPlayer){
                 cpuSealPar = true;
+                stats.curseSeal += 1;
+                checkAchievements();
                 cpuSealTurns = 2;
               }
               else {
@@ -1604,7 +3033,15 @@
                 (Math.floor(Math.random()*3)+1) +
                 (Math.floor(Math.random()*7)+1) + 5;
 
+              if(damage >= 15 && isPlayer){
+                stats.gamble15 += 1;
+                checkAchievements();
+              }
+
               if(jackpotMode || Math.floor(Math.random()*25) === 0){
+                stats.jackpotCount += 1;
+                checkAchievements();
+                saveData();
                 playJackpotSound();
                 newPower += 2;
 
@@ -1636,6 +3073,11 @@
 
           if(element === "thunder") {
             damage = thunder ? 20 : 4;
+
+            if(damage >= 20 && isPlayer){
+              stats.thunder20 += 1;
+              checkAchievements();
+            }
             newThunder = true;
           }
 
@@ -1651,6 +3093,23 @@
 
       if(hand === 1){
         damage = 4;
+
+        if(element === "vampire"){
+          damage += ((isPlayer ? playerHP : cpuHP) <= 10 ? 2 : 0);
+        }
+
+        if(element === "ice"){
+          if(isPlayer){
+            cpuIceDebuff = 2;
+          }
+          else {
+            playerIceDebuff = 2;
+          }
+        }
+
+        if(element === "doppel"){
+          damage = 2;
+        }
 
         if(element === "wind"){
           const speed = isPlayer
@@ -1717,6 +3176,14 @@
 
       if(hand === 2){
         damage = 2;
+
+        if(element === "vampire"){
+          damage += ((isPlayer ? playerHP : cpuHP) <= 10 ? 2 : 0);
+        }
+
+        if(element === "doppel"){
+          damage = 2;
+        }
 
         if(element === "wind"){
           const speed = isPlayer
@@ -1789,6 +3256,17 @@
     }
 
     function selectHand(hand,button){
+      const frozen = gameMode === "friend"
+        ? (friendTurn === 1 ? playerFrozenHand : cpuFrozenHand)
+        : playerFrozenHand;
+
+      if(frozen === hand){
+        document.getElementById("result").innerHTML = `
+          ❄️ この手は凍結されている！<br>
+          <span style="font-size:56px;">${hands[hand]}</span>
+        `;
+        return;
+      }
       // パー封印チェック
       if(hand === 2){
         const sealed = gameMode === "friend"
@@ -1845,6 +3323,7 @@
     let enemyOnlineHand = null;
 
     async function play(playerHand){
+      stats.totalMatches += 1;
       if(gameMode === "online"){
 
         // 初回入力
@@ -1964,6 +3443,36 @@
       if(playerHand===cpuHand){
         resultText = "DRAW";
 
+        if(playerElement === "doppel"){
+          const strong = playerPower >= 3;
+          const dmg = strong ? 7 : 4;
+
+          cpuHP -= dmg;
+
+          stats.doppelDraw += 1;
+
+          if(strong){
+            playerPower -= 3;
+          }
+
+          playerPower += 1;
+        }
+
+        if(cpuElement === "doppel"){
+          const strong = cpuPower >= 3;
+          const dmg = strong ? 7 : 4;
+
+          playerHP -= dmg;
+
+          stats.doppelDraw += 1;
+
+          if(strong){
+            cpuPower -= 3;
+          }
+
+          cpuPower += 1;
+        }
+
         if(playerElement === "water"){
           playerPower = Math.min(playerPower + 1, playerElement === "fighter" ? 4 : 3);
         }
@@ -1973,8 +3482,23 @@
         }
       }
       else if(playerWin){
+        if(playerElement === "doppel"){
+          playerHP -= 1;
+        }
+
+        if(cpuElement === "doppel"){
+          cpuHP -= 1;
+        }
         reducedDamage = Math.max(p.damage - cpuEarthShield,0);
+        reducedDamage = Math.max(reducedDamage - cpuIceShield,0);
         cpuHP -= reducedDamage;
+
+        if(playerElement === "vampire"){
+          const heal = Math.floor(reducedDamage / 2);
+          playerHP = Math.min(playerHP + heal,30);
+          stats.vampireHeal += heal;
+        }
+        cpuIceShield = 0;
 
         if(playerElement === "water" && playerHand === 0 && playerPower >= 0){
           const healAmount = playerHP <= 8 ? 4 : 2;
@@ -1983,8 +3507,25 @@
         resultText = "YOU WIN";
       }
       else {
+        if(playerElement === "doppel"){
+          playerHP -= 1;
+        }
+
+        if(cpuElement === "doppel"){
+          cpuHP -= 1;
+        }
+
         reducedDamage = Math.max(c.damage - playerEarthShield,0);
+        reducedDamage = Math.max(reducedDamage - playerIceShield,0);
+        reducedDamage = Math.max(reducedDamage - playerIceDebuff,0);
         playerHP -= reducedDamage;
+
+        if(cpuElement === "vampire"){
+          const heal = Math.floor(reducedDamage / 2);
+          cpuHP = Math.min(cpuHP + heal,30);
+        }
+        playerIceShield = 0;
+        playerIceDebuff = 0;
 
         if(reducedDamage >= 8){
           document.getElementById("damageEffect").innerHTML = `
@@ -2032,6 +3573,30 @@
         resultText = "YOU LOSE";
       }
 
+      if(playerElement === "poison" && playerWin){
+        cpuPoison += 1;
+      }
+
+      if(cpuElement === "poison" && !playerWin && playerHand !== cpuHand){
+        playerPoison += 1;
+      }
+
+      if(playerPoison > 0){
+        playerHP -= playerPoison;
+
+        if(playerHP <= 0 && cpuElement === "poison"){
+          stats.poisonWins += 1;
+        }
+      }
+
+      if(cpuPoison > 0){
+        cpuHP -= cpuPoison;
+
+        if(cpuHP <= 0 && playerElement === "poison"){
+          stats.poisonWins += 1;
+        }
+      }
+
       if(playerCurseTurns > 0){
         playerCurseTurns -= 1;
       }
@@ -2059,6 +3624,10 @@
 
       playerHP = Math.max(playerHP,0);
       cpuHP = Math.max(cpuHP,0);
+
+      stats.maxDamage = Math.max(stats.maxDamage,reducedDamage);
+      saveData();
+      checkAchievements();
 
       const finalDamage = playerHand===cpuHand
         ? 0
@@ -2113,7 +3682,16 @@
         </div>
 
         <div style="margin-top:16px;font-size:32px;line-height:1.6;">
-          ${playerHand===cpuHand ? "ダメージなし" : playerWin ? `🤖 CPU -${reducedDamage}` : `🧍 PLAYER -${reducedDamage}`}
+          ${playerHand===cpuHand
+            ? (
+                playerElement === "doppel" || cpuElement === "doppel"
+                  ? `${playerElement === "doppel" ? `🤖 CPU -${playerPower >= 3 ? 7 : 4}<br>` : ''}${cpuElement === "doppel" ? `🧍 PLAYER -${cpuPower >= 3 ? 7 : 4}` : ''}`
+                  : "ダメージなし"
+              )
+            : playerWin
+              ? `🤖 CPU -${reducedDamage}`
+              : `🧍 PLAYER -${reducedDamage}`
+          }
         </div>
       `;
 
@@ -2137,7 +3715,22 @@
                 : `前回ダメージ: PLAYERに${reducedDamage}`}
       `;
 
+      if(cpuHP<=0){
+        stats.winStreak += 1;
+        if(gameMode === "cpu"){
+          stats.cpuWins += 1;
+        }
+
+        if(gameMode === "online"){
+          stats.onlineWins += 1;
+        }
+
+        saveData();
+        checkAchievements();
+      }
+
       if(playerHP<=0){
+        stats.winStreak = 0;
         document.getElementById("result").innerHTML += `
           <br><br>☠️ GAME OVER
           <br><br>
@@ -2165,6 +3758,15 @@
           <button onclick="${gameMode === 'online' ? 'returnToWaitingRoom()' : 'resetGame()'}">
             ${gameMode === 'online' ? '待合室へ戻る' : 'もう一度遊ぶ'}
           </button>
+
+          ${gameMode !== 'online'
+            ? `
+              <br><br>
+              <button onclick="returnToModeSelect()">
+                🏠 モード選択へ戻る
+              </button>
+            `
+            : ''}
         `;
       }
 
@@ -2399,7 +4001,12 @@
       }
     }
 
+    updateCoinUI();
+    renderElementButtons();
+    checkAchievements();
+
     connectOnlineServer();
+    updateMenuButtons();
   </script>
 </body>
 </html>
