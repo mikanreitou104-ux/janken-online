@@ -5,128 +5,194 @@ const { Server } = require("socket.io");
 const app = express();
 const server = http.createServer(app);
 
-const io = new Server(server);
-
-app.use(express.static("public"));
+const io = new Server(server, {
+    cors: {
+        origin: "*"
+    }
+});
 
 const rooms = {};
 
 io.on("connection", (socket) => {
 
-console.log("接続:", socket.id);
+    console.log("接続:", socket.id);
 
-// ===== ルーム参加 =====
-socket.on("joinRoom", ({ roomCode, playerName, host }) => {
+    // ルーム作成
+    socket.on("createRoom", (data) => {
 
-socket.join(roomCode);
+        const roomCode = data.roomCode;
 
-if (!rooms[roomCode]) {
-  rooms[roomCode] = {
-    players: [],
-    hands: {},
-    elements: {},
-    names: {}
-  };
-}
+        // 重複防止
+        if (rooms[roomCode]) {
+            socket.emit("errorMessage", "既に存在するルームです");
+            return;
+        }
 
-rooms[roomCode].players.push(socket.id);
+        rooms[roomCode] = {
+            players: [],
+            roomSettings: {
+                skillsEnabled:
+                    data.roomSettings?.skillsEnabled ?? true
+            }
+        };
 
-rooms[roomCode].names[socket.id] = playerName;
+        socket.join(roomCode);
 
-io.to(roomCode).emit("roomJoined", {
-  room: roomCode,
-  players: rooms[roomCode].players.length
-});
+        rooms[roomCode].players.push({
+            id: socket.id,
+            name: data.playerName
+        });
 
-// 相手へ名前送信
-socket.to(roomCode).emit("enemyName", {
-  name: playerName
-});
+        socket.roomCode = roomCode;
 
-// 既にいる相手の名前を新規参加者へ送信
-for (const id of rooms[roomCode].players) {
+        console.log("ルーム作成:", roomCode);
 
-  if (id !== socket.id) {
-
-    socket.emit("enemyName", {
-      name: rooms[roomCode].names[id]
+        // 作成完了
+        io.to(roomCode).emit("roomCreated", {
+            roomCode,
+            players: rooms[roomCode].players,
+            roomSettings: rooms[roomCode].roomSettings
+        });
     });
 
-  }
-}
+    // ルーム参加
+    socket.on("joinRoom", (data) => {
 
-console.log(socket.id + " joined " + roomCode);
+        const roomCode = data.roomCode;
 
-});
+        if (!rooms[roomCode]) {
+            socket.emit(
+                "errorMessage",
+                "ルームが存在しません"
+            );
+            return;
+        }
 
-// ===== 対戦開始 =====
-socket.on("startBattle", ({ roomCode }) => {
+        socket.join(roomCode);
 
+        rooms[roomCode].players.push({
+            id: socket.id,
+            name: data.playerName
+        });
 
-if (!rooms[roomCode]) return;
+        socket.roomCode = roomCode;
 
-console.log("対戦開始:", roomCode);
+        console.log("ルーム参加:", roomCode);
 
-io.to(roomCode).emit("battleStart");
+        // 全員同期
+        io.to(roomCode).emit("roomJoined", {
+            players: rooms[roomCode].players,
+            roomSettings: rooms[roomCode].roomSettings
+        });
+    });
 
+    // 設定変更
+    socket.on("updateRoomSettings", (data) => {
 
-});
+        const roomCode = socket.roomCode;
 
-// ===== 属性選択 =====
-socket.on("selectElement", ({ roomCode, element }) => {
+        if (!rooms[roomCode]) return;
 
+        // skillsEnabledのみ変更可能
+        if (typeof data.skillsEnabled === "boolean") {
 
-if (!rooms[roomCode]) return;
+            rooms[roomCode].roomSettings.skillsEnabled =
+                data.skillsEnabled;
+        }
 
-rooms[roomCode].elements[socket.id] = element;
+        console.log(
+            "設定更新:",
+            rooms[roomCode].roomSettings
+        );
 
-socket.to(roomCode).emit("enemyElement", {
-  element
-});
+        // 全員へ同期
+        io.to(roomCode).emit("roomSettingsUpdated", {
+            roomSettings: rooms[roomCode].roomSettings,
+            updatedBy: socket.id
+        });
+    });
 
-console.log("属性受信", roomCode, element);
+    // ゲーム開始
+    socket.on("startGame", () => {
 
+        const roomCode = socket.roomCode;
 
-});
+        if (!rooms[roomCode]) return;
 
-// ===== 手選択 =====
-socket.on("selectHand", ({ roomCode, hand }) => {
+        io.to(roomCode).emit("gameStart", {
+            players: rooms[roomCode].players,
+            roomSettings: rooms[roomCode].roomSettings
+        });
 
-if (!rooms[roomCode]) return;
+        console.log("ゲーム開始:", roomCode);
+    });
 
-rooms[roomCode].hands[socket.id] = hand;
+    // スキル使用
+    socket.on("useSkill", (data) => {
 
-socket.to(roomCode).emit("enemySelected", {
-  hand
-});
+        const roomCode = socket.roomCode;
 
-console.log("手受信", roomCode, hand);
+        if (!rooms[roomCode]) return;
 
-});
+        // サーバー側チェック
+        if (
+            !rooms[roomCode]
+                .roomSettings
+                .skillsEnabled
+        ) {
+            console.log(
+                "スキル無効のため拒否"
+            );
 
-// ===== 切断 =====
-socket.on("disconnect", () => {
+            socket.emit(
+                "errorMessage",
+                "現在スキルは禁止されています"
+            );
 
-for (const roomCode in rooms) {
+            return;
+        }
 
-  rooms[roomCode].players =
-    rooms[roomCode].players.filter(id => id !== socket.id);
+        io.to(roomCode).emit("skillUsed", {
+            playerId: socket.id,
+            skill: data.skill
+        });
+    });
 
-  delete rooms[roomCode].hands[socket.id];
-  delete rooms[roomCode].elements[socket.id];
-  delete rooms[roomCode].names[socket.id];
+    // 切断
+    socket.on("disconnect", () => {
 
-  if (rooms[roomCode].players.length === 0) {
-    delete rooms[roomCode];
-  }
-}
+        const roomCode = socket.roomCode;
 
-console.log("切断:", socket.id);
+        if (roomCode && rooms[roomCode]) {
 
-});
+            rooms[roomCode].players =
+                rooms[roomCode].players.filter(
+                    p => p.id !== socket.id
+                );
 
+            io.to(roomCode).emit("playerLeft", {
+                players: rooms[roomCode].players
+            });
+
+            // ルーム削除
+            if (
+                rooms[roomCode].players.length === 0
+            ) {
+                delete rooms[roomCode];
+
+                console.log(
+                    "ルーム削除:",
+                    roomCode
+                );
+            }
+        }
+
+        console.log("切断:", socket.id);
+    });
 });
 
 server.listen(3000, () => {
-console.log("サーバー起動 http://localhost:3000");
+    console.log(
+        "Server running on port 3000"
+    );
 });

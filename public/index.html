@@ -1480,6 +1480,17 @@
       </div>
     </div>
 
+    <div id="skillShopScreen" style="display:none;position:fixed;inset:0;z-index:9001;background:rgba(15,23,42,0.82);backdrop-filter:blur(10px);padding:40px 24px;overflow-y:auto;">
+      <div style="max-width:1000px;margin:0 auto;background:rgba(255,255,255,0.08);border-radius:28px;padding:24px;box-shadow:0 0 40px rgba(0,0,0,0.45);">
+      <div style="display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:rgba(15,23,42,0.95);padding-bottom:12px;z-index:5;">
+        <h2>🧠 スキルショップ</h2>
+        <button onclick="closeSkillShop()">閉じる</button>
+      </div>
+
+      <div id="skillShopList"></div>
+      </div>
+    </div>
+
     <div id="shopScreen" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(15,23,42,0.82);backdrop-filter:blur(10px);padding:40px 24px;overflow-y:auto;">
       <div style="max-width:1000px;margin:0 auto;background:rgba(255,255,255,0.08);border-radius:28px;padding:24px;box-shadow:0 0 40px rgba(0,0,0,0.45);">
       <div style="display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:rgba(15,23,42,0.95);padding-bottom:12px;z-index:5;">
@@ -1508,8 +1519,9 @@
             📱 スマホUI: OFF
           </button>
         </div>
-        <div style="font-size:18px;font-weight:bold;margin-bottom:12px;">
-          🪙 <span id="coinText">0</span>
+        <div style="font-size:18px;font-weight:bold;margin-bottom:12px;display:flex;justify-content:center;gap:18px;flex-wrap:wrap;">
+          <div>🪙 <span id="coinText">0</span></div>
+          <div>🧠 <span id="skillPointText">100</span> SP</div>
         </div>
 
         <div class="buttons" style="margin-top:0;margin-bottom:12px;">
@@ -1517,6 +1529,7 @@
           <button onclick="openGuideOverlay()">📖 早見表</button>
           <button onclick="currentShopTab='element';openShop()">🔓 属性ショップ</button>
           <button onclick="currentShopTab='background';openShop()">🎨 背景ショップ</button>
+          <button onclick="openSkillShop()">🧠 スキルショップ</button>
         </div>
       </div>
       <h2>モード選択</h2>
@@ -1576,6 +1589,10 @@
           プレイヤーを待っています...
         </div>
 
+        <div id="roomRuleView" style="margin-top:12px;font-size:18px;color:#67e8f9;font-weight:bold;">
+          🧠 スキル: ON
+        </div>
+
         <div class="buttons" style="margin-top:20px;">
           <button id="startBattleButton" onclick="startOnlineBattle()" style="display:none;">
             ⚔️ 対戦開始
@@ -1595,6 +1612,26 @@
           placeholder="名前を入力"
           style="padding:14px;border-radius:12px;border:none;font-size:18px;width:260px;"
         />
+
+        <div style="background:rgba(255,255,255,0.06);padding:14px;border-radius:16px;width:280px;">
+          <div style="margin-bottom:8px;font-weight:bold;">
+            🧠 スキルルール
+          </div>
+
+          <select
+            id="skillModeSelect"
+            style="
+              width:100%;
+              padding:12px;
+              border:none;
+              border-radius:12px;
+              font-size:16px;
+            "
+          >
+            <option value="on">スキルあり</option>
+            <option value="off">スキルなし</option>
+          </select>
+        </div>
 
         <button onclick="createOnlineRoom()">ルーム作成</button>
         <button onclick="joinOnlineRoom()">ルーム参加</button>
@@ -1767,6 +1804,10 @@
     const hands = ["✊","✌️","✋"];
 
     let onlineMode = false;
+
+let roomSettings = {
+  skillsEnabled:true
+};
     let isRoomHost = false;
     let roomCode = "";
     let playerName = "PLAYER";
@@ -1849,6 +1890,79 @@
 
     let unlockedElements = JSON.parse(localStorage.getItem("unlockedElements") || '["fire","water","earth","thunder"]');
     let selectedSkin = localStorage.getItem("selectedSkin") || "default";
+
+    let skillPoints = Number(localStorage.getItem("skillPoints") || 100);
+
+let unlockedSkills = JSON.parse(localStorage.getItem("unlockedSkills") || '[]');
+let activeSkills = JSON.parse(localStorage.getItem("activeSkills") || '[]');
+
+const skillList = {
+      powerBoost:{
+        name:"🔥 パワーブースト",
+        desc:"グーのダメージ+1",
+        cost:20
+      },
+      shield:{
+        name:"🛡️ シールド",
+        desc:"被ダメージ-1",
+        cost:25
+      },
+      battery:{
+        name:"⚡ バッテリー",
+        desc:"初期パワー+1",
+        cost:30
+      },
+      berserk:{
+        name:"💢 バーサーク",
+        desc:"HP10以下で全攻撃+2",
+        cost:35
+      },
+      regeneration:{
+        name:"💚 自然治癒",
+        desc:"あいこ時にHP+1",
+        cost:25
+      },
+      poisonBody:{
+        name:"☣️ 毒耐性",
+        desc:"毒ダメージ-1",
+        cost:20
+      },
+      giantKiller:{
+        name:"⚔️ ジャイアントキラー",
+        desc:"相手HP20以上なら与ダメ+2",
+        cost:30
+      },
+      finisher:{
+        name:"💀 フィニッシャー",
+        desc:"相手HP10以下なら与ダメ+2",
+        cost:35
+      },
+      manaTank:{
+        name:"🔋 マナタンク",
+        desc:"最大パワー+1",
+        cost:40
+      },
+      counter:{
+        name:"🪞 カウンター",
+        desc:"あいこ時に相手へ1ダメージ",
+        cost:20
+      },
+      lucky:{
+        name:"🍀 ラッキー",
+        desc:"10%で被ダメージ0",
+        cost:30
+      },
+      vampiric:{
+        name:"🩸 吸収攻撃",
+        desc:"与ダメージの20%回復",
+        cost:45
+      },
+      combo:{
+        name:"🔥 コンボ",
+        desc:"同じ手を連続使用で+1ダメ",
+        cost:25
+      }
+    };
 
     const elementUnlockPrice = 150;
 
@@ -2107,6 +2221,8 @@
     let cpuIceDebuff = 0;
     let playerIceShield = 0;
     let cpuIceShield = 0;
+    let playerIceShieldUses = 0;
+    let cpuIceShieldUses = 0;
     let cpuWindSpeed = 0;
 
     let playerLastHand = null;
@@ -2133,10 +2249,22 @@
       localStorage.setItem("ownedSkins", JSON.stringify(ownedSkins));
       localStorage.setItem("selectedSkin", selectedSkin);
       localStorage.setItem("unlockedElements", JSON.stringify(unlockedElements));
+      localStorage.setItem("skillPoints", skillPoints);
+      localStorage.setItem("unlockedSkills", JSON.stringify(unlockedSkills));
+      localStorage.setItem("activeSkills", JSON.stringify(activeSkills));
     }
 
     function updateCoinUI(){
-      document.getElementById("coinText").innerHTML = coins;
+      const coinText = document.getElementById("coinText");
+      const skillPointText = document.getElementById("skillPointText");
+
+      if(coinText){
+        coinText.textContent = coins;
+      }
+
+      if(skillPointText){
+        skillPointText.textContent = skillPoints;
+      }
     }
 
     function unlockAchievement(id){
@@ -2399,12 +2527,12 @@
 
     function openElementShop(){
       currentShopTab = "element";
-      openShop();
+      openSkillShop();
     }
 
     function openBackgroundShop(){
       currentShopTab = "background";
-      openShop();
+      openSkillShop();
     }
 
     function openShop(){
@@ -2455,7 +2583,7 @@
           `;
         }
       }
-      else {
+      else if(currentShopTab === "background") {
         html += `
           <div style="margin-top:14px;font-size:20px;font-weight:bold;">
             🎨 背景ショップ
@@ -2497,14 +2625,17 @@
           `;
         }
       }
+      
 
       document.getElementById("shopList").innerHTML = html;
     }
 
     function buyElement(id){
+      if(unlockedElements.includes(id)) return;
+      if(coins < elementUnlockPrice) return;
+
       stats.shopBuy += 1;
       checkAchievements();
-      if(coins < elementUnlockPrice) return;
 
       coins -= elementUnlockPrice;
       unlockedElements.push(id);
@@ -2512,29 +2643,143 @@
       saveData();
       updateCoinUI();
       renderElementButtons();
-      openShop();
+      openSkillShop();
     }
 
     function buySkin(id){
-      stats.shopBuy += 1;
-      checkAchievements();
+      if(ownedSkins.includes(id)) return;
+
       const item = shopItems[id];
 
-      if(coins < item.price) return;
+      if(!item || coins < item.price) return;
+
+      stats.shopBuy += 1;
+      checkAchievements();
 
       coins -= item.price;
       ownedSkins.push(id);
 
       saveData();
       updateCoinUI();
-      openShop();
+      openSkillShop();
+    }
+
+    function unlockSkill(id){
+      if(unlockedSkills.includes(id)) return;
+
+      const skill = skillList[id];
+
+      if(!skill || skillPoints < skill.cost) return;
+
+      skillPoints -= skill.cost;
+      unlockedSkills.push(id);
+
+      saveData();
+      updateCoinUI();
+      openSkillShop();
+    }
+
+    function removeSkill(id){
+      if(!unlockedSkills.includes(id)) return;
+
+      const skill = skillList[id];
+
+      unlockedSkills = unlockedSkills.filter(v=>v !== id);
+      skillPoints += skill.cost;
+
+      saveData();
+      updateCoinUI();
+      openSkillShop();
     }
 
     function equipSkin(id){
       selectedSkin = id;
       saveData();
       applySkin();
-      openShop();
+      openSkillShop();
+    }
+
+    function toggleSkillActive(id){
+      if(!unlockedSkills.includes(id)) return;
+
+      if(activeSkills.includes(id)){
+        activeSkills = activeSkills.filter(v=>v !== id);
+      }
+      else {
+        activeSkills.push(id);
+      }
+
+      saveData();
+      openSkillShop();
+    }
+
+    function hasSkill(id){
+      if(!roomSettings.skillsEnabled){
+        return false;
+      }
+
+      return activeSkills.includes(id);
+    }
+
+    function openSkillShop(){
+      document.getElementById("skillShopScreen").style.display = "block";
+
+      let html = `
+        <div style="margin-top:14px;font-size:20px;font-weight:bold;">
+          🧠 スキル一覧
+        </div>
+
+        <div style="margin-top:8px;opacity:0.85;">
+          現在のスキルポイント: ${skillPoints}SP
+        </div>
+      `;
+
+      for(const id in skillList){
+        const skill = skillList[id];
+        const unlocked = unlockedSkills.includes(id);
+
+        html += `
+          <div style="
+            margin-top:14px;
+            padding:12px;
+            border-radius:16px;
+            background:rgba(255,255,255,0.06);
+          ">
+            <div style="font-size:18px;font-weight:bold;">
+              ${skill.name}
+            </div>
+
+            <div style="opacity:0.8;margin-top:6px;">
+              ${skill.desc}
+            </div>
+
+            <div style="margin-top:6px;color:#67e8f9;font-weight:bold;font-size:14px;">
+              🧠 ${skill.cost}SP
+            </div>
+
+            <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;">
+              ${unlocked
+                ? `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <div style="background:linear-gradient(135deg,#22c55e,#16a34a);padding:6px 12px;border-radius:999px;font-weight:bold;box-shadow:0 0 14px rgba(34,197,94,0.45);">
+                      ✅ 解放済み
+                    </div>
+                    <button onclick="toggleSkillActive('${id}')">
+                      ${activeSkills.includes(id) ? '🟢 ON' : '⚪ OFF'}
+                    </button>
+                    <button onclick="removeSkill('${id}')">解除</button>
+                  </div>`
+                : `<button onclick="unlockSkill('${id}')">解放</button>`
+              }
+            </div>
+          </div>
+        `;
+      }
+
+      document.getElementById("skillShopList").innerHTML = html;
+    }
+
+    function closeSkillShop(){
+      document.getElementById("skillShopScreen").style.display = "none";
     }
 
     function closeShop(){
@@ -2550,7 +2795,8 @@
     }
 
     function toggleGuideBox(){
-      return;
+      const box = document.getElementById('guideBox');
+      box.classList.toggle('guideClosed');
     }
 
     function openGuideOverlay(){
@@ -2666,19 +2912,19 @@
     }
 
     function openOnlineMenu(){
-      document.getElementById("modeScreen").style.display = "none";
-      document.getElementById("onlineScreen").style.display = "block";
+      showScreen('onlineScreen');
       updateMenuButtons();
     }
 
     function closeOnlineMenu(){
-      document.getElementById("onlineScreen").style.display = "none";
-      document.getElementById("modeScreen").style.display = "block";
+      showScreen('modeScreen');
       updateMenuButtons();
       updateMenuButtons();
     }
 
     function createOnlineRoom(){
+      roomSettings.skillsEnabled =
+        document.getElementById("skillModeSelect").value === "on";
       const code = document.getElementById("roomCodeInput").value.trim();
       playerName = document.getElementById("playerNameInput").value.trim() || "PLAYER";
 
@@ -2700,7 +2946,8 @@
         socket.emit("joinRoom", {
           roomCode,
           playerName,
-          host:true
+          host:true,
+          roomSettings
         });
       }
 
@@ -2708,6 +2955,9 @@
         🌐 ルーム作成中...<br>
         ROOM: <b>${code}</b>
       `;
+
+      document.getElementById("roomRuleView").innerHTML =
+        `🧠 スキル: ${roomSettings.skillsEnabled ? 'ON' : 'OFF'}`;
 
       document.getElementById("waitingRoom").style.display = "block";
       document.getElementById("waitingRoomText").innerHTML = "対戦相手を待っています...";
@@ -2756,19 +3006,13 @@
       }
     }
 
-    function updateMenuButtons(){
-      // モード画面へ統合済みのため現在は空関数
-      return;
-    }
+    function updateMenuButtons(){}
 
     function selectMode(mode){
       gameMode = mode;
 
-      document.getElementById("modeScreen").style.display = "none";
+      showScreen('elementScreen');
       updateMenuButtons();
-      document.getElementById("onlineScreen").style.display = "none";
-      document.getElementById("waitingRoom").style.display = "none";
-      document.getElementById("elementScreen").style.display = "block";
     }
 
     function selectElement(element,button){
@@ -2804,8 +3048,7 @@
 
         // 相手の属性が既に届いていたら即開始
         if(cpuElement && cpuElement !== ""){
-          document.getElementById("elementScreen").style.display = "none";
-          document.getElementById("gameScreen").style.display = "block";
+          showScreen('gameScreen');
           updateUI();
         }
 
@@ -2853,8 +3096,7 @@
             : "none";
       }
 
-      document.getElementById("elementScreen").style.display = "none";
-      document.getElementById("gameScreen").style.display = "block";
+      showScreen('gameScreen');
 
       // BGM停止中
 
@@ -2885,8 +3127,8 @@
       document.getElementById("playerHPText").innerHTML = playerHP;
       document.getElementById("cpuHPText").innerHTML = cpuHP;
 
-      document.getElementById("playerHPBar").style.width = `${playerHP/30*100}%`;
-      document.getElementById("cpuHPBar").style.width = `${cpuHP/30*100}%`;
+      document.getElementById("playerHPBar").style.width = `${Math.max(0,playerHP)/30*100}%`;
+      document.getElementById("cpuHPBar").style.width = `${Math.max(0,cpuHP)/30*100}%`;
 
       const playerMaxPower = playerElement === "fighter"
         ? 4
@@ -2962,6 +3204,7 @@
       const wind = isPlayer ? playerWindSpeed : cpuWindSpeed;
       const frozenHand = isPlayer ? cpuFrozenHand : playerFrozenHand;
       const iceShield = isPlayer ? playerIceShield : cpuIceShield;
+      const iceShieldUses = isPlayer ? playerIceShieldUses : cpuIceShieldUses;
       const iceDebuff = isPlayer ? playerIceDebuff : cpuIceDebuff;
       const fireBoost = isPlayer ? playerFireBoost : cpuFireBoost;
       const earthCount = isPlayer ? playerEarthCount : cpuEarthCount;
@@ -3012,7 +3255,7 @@
           : '❄️ 封印なし';
 
         return `${freezeText}<br>
-        🛡️ シールド:${iceShield} | 弱体:${iceDebuff}`;
+        🛡️ シールド:${iceShield} (${iceShieldUses}回) | 弱体:${iceDebuff}`;
       }
 
       if(element === "doppel"){
@@ -3039,6 +3282,8 @@
 
     function getAttack(hand, element, power, earth, thunder, isPlayer){
       let damage = 0;
+
+      const hasPowerRing = hasSkill("powerBoost");
       let newPower = power;
       let newEarth = earth;
       let newThunder = thunder;
@@ -3070,7 +3315,7 @@
           }
 
           if(element === "fire") {
-            damage = 8 + (isPlayer ? playerFireBoost : cpuFireBoost);
+            damage = 8 + (isPlayer ? playerFireBoost : cpuFireBoost) + (hasPowerRing ? 1 : 0);
 
             if(isPlayer){
               playerFireBoost += 1;
@@ -3080,10 +3325,10 @@
             }
           }
           if(element === "water") {
-            damage = 8;
+            damage = 8 + (hasPowerRing ? 1 : 0);
           }
           if(element === "earth") {
-            damage = 8 + (isPlayer ? playerEarthBoost : cpuEarthBoost);
+            damage = 8 + (isPlayer ? playerEarthBoost : cpuEarthBoost) + (hasPowerRing ? 1 : 0);
 
             if(isPlayer){
               playerEarthCount += 1;
@@ -3127,19 +3372,19 @@
             }
           }
           if(element === "fighter") {
-            damage = 7;
+            damage = 7 + (hasPowerRing ? 1 : 0);
           }
 
           if(element === "poison") {
-            damage = 5;
+            damage = 5 + (hasPowerRing ? 1 : 0);
           }
 
           if(element === "vampire") {
-            damage = 6;
+            damage = 6 + (hasPowerRing ? 1 : 0);
           }
 
           if(element === "ice") {
-            damage = 6;
+            damage = 6 + (hasPowerRing ? 1 : 0);
 
             const targetLastHand = isPlayer
               ? cpuLastHand
@@ -3159,9 +3404,11 @@
 
             if(isPlayer){
               playerIceShield = 2;
+              playerIceShieldUses = 2;
             }
             else {
               cpuIceShield = 2;
+              cpuIceShieldUses = 2;
             }
           }
 
@@ -3171,7 +3418,7 @@
           }
 
           if(element === "wind") {
-            damage = 5;
+            damage = 5 + (hasPowerRing ? 1 : 0);
 
             const speed = isPlayer
               ? playerWindSpeed
@@ -3202,7 +3449,7 @@
           }
 
           if(element === "curse") {
-            damage = 7;
+            damage = 7 + (hasPowerRing ? 1 : 0);
 
             const curseCost = isPlayer
               ? playerCursePowerMode
@@ -3307,7 +3554,7 @@
           }
 
           if(element === "thunder") {
-            damage = thunder ? 20 : 4;
+            damage = (thunder ? 20 : 4) + (hasPowerRing ? 1 : 0);
 
             if(damage >= 20 && isPlayer){
               stats.thunder20 += 1;
@@ -3517,9 +3764,7 @@
       }
       selectedFriendHand = hand;
 
-      document.querySelectorAll('.handButton').forEach(btn=>{
-        btn.classList.remove('selectedHand');
-      });
+      clearHandSelection();
 
       button.classList.add('selectedHand');
 
@@ -3548,17 +3793,18 @@
       selectedFriendHand = null;
       document.getElementById("okButton").style.display = "none";
 
-      document.querySelectorAll('.handButton').forEach(btn=>{
-        btn.classList.remove('selectedHand');
-      });
+      clearHandSelection();
     }
 
     let onlineSelectedHand = null;
     let onlineHandLocked = false;
     let enemyOnlineHand = null;
+    let cpuHandFixed = null;
 
     async function play(playerHand){
-      stats.totalMatches += 1;
+      if(playerHP > 0 && cpuHP > 0){
+        stats.totalMatches += 1;
+      }
       if(gameMode === "online"){
 
         // 初回入力
@@ -3751,6 +3997,9 @@
         }
 
         reducedDamage = Math.max(c.damage - playerEarthShield,0);
+        if(hasSkill("shield")){
+          reducedDamage = Math.max(reducedDamage - 1,0);
+        }
         reducedDamage = Math.max(reducedDamage - playerIceShield,0);
         reducedDamage = Math.max(reducedDamage - playerIceDebuff,0);
         playerHP -= reducedDamage;
@@ -3934,7 +4183,9 @@
 
       cutin.classList.add("hidden");
 
-      document.getElementById("result").innerHTML = `
+      const resultElement = document.getElementById("result");
+
+      resultElement.innerHTML = `
         ${playerHand===cpuHand
           ? "前回ダメージ: なし"
           : playerWin
@@ -4016,21 +4267,29 @@
       playerHP = 30;
       cpuHP = 30;
 
-      playerPower = maxPowerMode
-        ? (playerElement === "fighter"
-            ? 4
-            : playerElement === "curse"
-              ? playerCurseMaxPower
-              : 3)
+      playerPower = hasSkill("battery")
+        ? 1
         : 0;
 
-      cpuPower = maxPowerMode
-        ? (cpuElement === "fighter"
-            ? 4
-            : cpuElement === "curse"
-              ? cpuCurseMaxPower
-              : 3)
+      if(maxPowerMode){
+        playerPower = playerElement === "fighter"
+          ? 4
+          : playerElement === "curse"
+            ? playerCurseMaxPower
+            : 3;
+      }
+
+      cpuPower = hasSkill("battery")
+        ? 1
         : 0;
+
+      if(maxPowerMode){
+        cpuPower = cpuElement === "fighter"
+          ? 4
+          : cpuElement === "curse"
+            ? cpuCurseMaxPower
+            : 3;
+      }
 
       playerEarth = false;
       cpuEarth = false;
@@ -4068,17 +4327,21 @@
       playerWindSpeed = 0;
       cpuWindSpeed = 0;
 
+      playerIceShieldUses = 0;
+      cpuIceShieldUses = 0;
+
       playerLastHand = null;
       cpuLastHand = null;
 
-      playerElement = "";
-
       if(gameMode !== "online"){
+        playerElement = "";
+      }
+
+      if(gameMode !== "online"){ 
         cpuElement = ["fire","water","earth","thunder"][Math.floor(Math.random()*4)];
       }
 
-      document.getElementById("elementScreen").style.display = "block";
-      document.getElementById("gameScreen").style.display = "none";
+      showScreen('elementScreen');
 
       // BGM停止中
 
@@ -4095,9 +4358,7 @@
       friendElement2 = "";
       selectedFriendHand = null;
 
-      document.querySelectorAll('.handButton').forEach(btn=>{
-        btn.classList.remove('selectedHand');
-      });
+      clearHandSelection();
 
       document.getElementById("okButton").style.display = "none";
 
@@ -4107,19 +4368,13 @@
     function returnToModeSelect(){
       resetGame();
 
-      document.getElementById("gameScreen").style.display = "none";
-      document.getElementById("elementScreen").style.display = "none";
-      document.getElementById("onlineScreen").style.display = "none";
-      document.getElementById("waitingRoom").style.display = "none";
-      document.getElementById("modeScreen").style.display = "block";
+      showScreen('modeScreen');
     }
 
     function returnToWaitingRoom(){
       resetGame();
 
-      document.getElementById("gameScreen").style.display = "none";
-      document.getElementById("elementScreen").style.display = "none";
-      document.getElementById("onlineScreen").style.display = "block";
+      showScreen('onlineScreen');
       document.getElementById("waitingRoom").style.display = "block";
 
       document.getElementById("waitingRoomText").innerHTML = "対戦相手と待機中...";
@@ -4156,6 +4411,16 @@
         });
 
         socket.on("roomJoined",(data)=>{
+          if(data.roomSettings){
+            roomSettings = data.roomSettings;
+
+            const ruleView = document.getElementById("roomRuleView");
+
+            if(ruleView){
+              ruleView.innerHTML =
+                `🧠 スキル: ${roomSettings.skillsEnabled ? 'ON' : 'OFF'}`;
+            }
+          }
           document.getElementById("onlineStatus").innerHTML = `
             🌐 接続成功<br>
             ROOM: ${data.room}
@@ -4176,8 +4441,7 @@
           document.getElementById("cpuElement").innerHTML = elementNames[cpuElement];
 
           if(playerElement !== ""){
-            document.getElementById("elementScreen").style.display = "none";
-            document.getElementById("gameScreen").style.display = "block";
+            showScreen('gameScreen');
 
             updateUI();
           }
@@ -4239,6 +4503,28 @@
     updateCoinUI();
     renderElementButtons();
     checkAchievements();
+
+    function clearHandSelection(){
+      document.querySelectorAll('.handButton').forEach(btn=>{
+        btn.classList.remove('selectedHand');
+      });
+    }
+
+    function showScreen(screenId){
+      [
+        'modeScreen',
+        'onlineScreen',
+        'elementScreen',
+        'gameScreen',
+        'waitingRoom'
+      ].forEach(id=>{
+        const el = document.getElementById(id);
+
+        if(el){
+          el.style.display = id === screenId ? 'block' : 'none';
+        }
+      });
+    }
 
     function toggleMobileUI(){
       document.body.classList.toggle('mobileUI');
