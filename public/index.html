@@ -2145,6 +2145,15 @@
           <button onclick="${gameMode === 'online' ? 'returnToWaitingRoom()' : 'resetGame()'}">
             ${gameMode === 'online' ? '待合室へ戻る' : 'もう一度遊ぶ'}
           </button>
+
+          ${gameMode !== 'online'
+            ? `
+              <br><br>
+              <button onclick="returnToModeSelect()">
+                🏠 モード選択へ戻る
+              </button>
+            `
+            : ''}
         `;
       }
 
@@ -2256,6 +2265,16 @@
       document.getElementById("okButton").style.display = "none";
 
       updateUI();
+    }
+
+    function returnToModeSelect(){
+      resetGame();
+
+      document.getElementById("gameScreen").style.display = "none";
+      document.getElementById("elementScreen").style.display = "none";
+      document.getElementById("onlineScreen").style.display = "none";
+      document.getElementById("waitingRoom").style.display = "none";
+      document.getElementById("modeScreen").style.display = "block";
     }
 
     function returnToWaitingRoom(){
