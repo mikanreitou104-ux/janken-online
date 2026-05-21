@@ -301,7 +301,47 @@
       font-size: 64px;
     }
 
-    .bigDamage {
+    .handBattle {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      font-size: 120px;
+      margin-top: 10px;
+    }
+
+    .playerHandAnim {
+      filter: drop-shadow(0 0 20px rgba(59,130,246,0.8));
+    }
+
+    .enemyHandAnim {
+      filter: drop-shadow(0 0 20px rgba(239,68,68,0.8));
+    }
+
+    .clashEffect {
+      font-size: 90px;
+      animation: clashFlash 0.5s ease-out;
+      text-shadow: 0 0 30px white;
+    }
+
+    @keyframes clashFlash {
+      0% {
+        transform: scale(0.2);
+        opacity: 0;
+      }
+
+      50% {
+        transform: scale(1.5);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+.bigDamage {
       position: fixed;
       inset: 0;
       display: flex;
@@ -321,6 +361,76 @@
       animation: megaHit 1.2s cubic-bezier(.17,.89,.32,1.49);
       z-index: 3000;
       transform-origin: center;
+    }
+
+    .damageScreen {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,0,0,0.22);
+      pointer-events: none;
+      z-index: 2400;
+      animation: damageBlink 0.65s ease-out;
+    }
+
+    .damageText {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      font-size: 120px;
+      font-weight: 900;
+      color: #ef4444;
+      text-shadow:
+        0 0 12px white,
+        0 0 30px #ef4444,
+        0 0 80px black;
+      z-index: 3200;
+      pointer-events: none;
+      animation: damageTextAnim 0.9s ease-out forwards;
+    }
+
+    .damageShake {
+      animation: damageShakeAnim 0.45s;
+    }
+
+    @keyframes damageBlink {
+      0% {
+        opacity: 0;
+      }
+
+      25% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    @keyframes damageTextAnim {
+      0% {
+        opacity: 0;
+        transform: translate(-50%,-50%) scale(0.3);
+      }
+
+      30% {
+        opacity: 1;
+        transform: translate(-50%,-50%) scale(1.4);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(-50%,-50%) scale(1);
+      }
+    }
+
+    @keyframes damageShakeAnim {
+      0% { transform: translate(0px,0px); }
+      20% { transform: translate(-8px,4px); }
+      40% { transform: translate(8px,-4px); }
+      60% { transform: translate(-6px,2px); }
+      80% { transform: translate(6px,-2px); }
+      100% { transform: translate(0px,0px); }
     }
 
     .impactFlash {
@@ -516,12 +626,6 @@
         transform: translateX(4px) rotate(1deg);
       }
     }
-
-      100% {
-        transform: translateY(-120vh) rotate(720deg);
-        opacity: 0;
-      }
-    }
   </style>
 </head>
 <body>
@@ -539,8 +643,8 @@
           勝利すると相手へダメージ。<br><br>
 
           ✊ グー：高火力（パワー消費）<br>
-          ✌️ チョキ：通常攻撃<br>
-          ✋ パー：低火力＋パワー増加<br><br>
+          ✌️ チョキ：4ダメージ<br>
+          ✋ パー：2ダメージ + パワー+1<br><br>
 
           属性ごとに特殊能力あり。<br>
           HPを0にしたら勝利。
@@ -554,7 +658,7 @@
         <div class="guideItem">
           グー: 8ダメージ<br>
           使用毎に+1<br>
-          HP5以下でバーストモード
+          HP10以下でバーストモード
         </div>
       </div>
     </div>
@@ -567,6 +671,19 @@
           あいこでパワー+1<br>
           HP8以下なら+4回復<br>
           それ以外は+2回復
+        </div>
+      </div>
+    </div>
+
+    <div class="guideSection">
+      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">🌪️ 風</div>
+      <div class="guideSectionBody">
+        <div class="guideItem">
+          グー: 5ダメージ<br>
+          前ターンと違う手を出すと風速+1<br>
+          グー命中で風速+2<br>
+          風速3で全攻撃+4<br>
+          強化攻撃後は風速0へ戻る
         </div>
       </div>
     </div>
@@ -597,6 +714,20 @@
     </div>
 
     <div class="guideSection">
+      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">🕯️ 呪術</div>
+      <div class="guideSectionBody">
+        <div class="guideItem">
+          グー: 7ダメージ<br>
+          グー使用で3ターン相手のパワー獲得封印<br>
+          パワー3でグー使用時:<br>
+          パワーを3消費し、<br>
+          次ターン相手のパー封印<br>
+          発動後は最大パワー2
+        </div>
+      </div>
+    </div>
+
+    <div class="guideSection">
       <div class="guideSectionHeader" onclick="toggleGuideSection(this)">🥊 格闘家</div>
       <div class="guideSectionBody">
         <div class="guideItem">
@@ -621,34 +752,9 @@
         </div>
       </div>
     </div>
-
-    <div class="guideSection">
-      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">🕯️ 呪術</div>
-      <div class="guideSectionBody">
-        <div class="guideItem">
-          グー: 7ダメージ<br>
-          グー使用で3ターン相手のパワー獲得封印<br>
-          パワー3でグー使用時:<br>
-          パワーを3消費し、<br>
-          次ターン相手のパー封印<br>
-          発動後は最大パワー2
-        </div>
-      </div>
     </div>
-        <div class="guideSection">
-      <div class="guideSectionHeader" onclick="toggleGuideSection(this)">✋✌️ 基本技</div>
-      <div class="guideSectionBody">
-        <div class="guideItem">
-          ✋ パー<br>
-          2ダメージ + パワー+1
-        </div>
-
-        <div class="guideItem">
-          ✌️ チョキ<br>
-          4ダメージ
-        </div>
-      </div>
     </div>
+
     </div>
   </div>
 
@@ -729,6 +835,7 @@
         <button class="elementButton" onclick="selectElement('fighter',this)">🥊 格闘家</button>
         <button class="elementButton" onclick="selectElement('gambler',this)">🎲 ギャンブラー</button>
         <button class="elementButton" onclick="selectElement('curse',this)">🕯️ 呪術</button>
+        <button class="elementButton" onclick="selectElement('wind',this)">🌪️ 風</button>
       </div>
     </div>
 
@@ -800,6 +907,7 @@
   <div id="burstFlameEffect" class="burstFlame"></div>
 
   <div id="bigDamageEffect"></div>
+  <div id="damageEffect"></div>
   <div id="impactFlash"></div>
   <div id="shockwaveEffect"></div>
   <div id="moneyRainEffect"></div>
@@ -881,7 +989,8 @@
       thunder:"⚡ 雷",
       fighter:"🥊 格闘家",
       gambler:"🎲 ギャンブラー",
-      curse:"🕯️ 呪術"
+      curse:"🕯️ 呪術",
+      wind:"🌪️ 風"
     };
 
     let playerElement = "";
@@ -930,6 +1039,12 @@
 
     let playerCursePowerMode = 3;
     let cpuCursePowerMode = 3;
+
+    let playerWindSpeed = 0;
+    let cpuWindSpeed = 0;
+
+    let playerLastHand = null;
+    let cpuLastHand = null;
 
     function toggleGuideSection(header){
       header.parentElement.classList.toggle("open");
@@ -1190,7 +1305,7 @@
 
       // BGM停止中
 
-      if(playerElement === "fire" && playerHP <= 5){
+      if(playerElement === "fire" && playerHP <= 10){
         let flames = "";
 
         for(let i=0;i<12;i++){
@@ -1282,8 +1397,10 @@
             : playerThunder
               ? `⚡ 雷強化 (${3 - playerThunderScissors}回)`
               : playerElement === "fire"
-                ? `${playerHP <= 5 ? "🔥🔥 バースト" : "🔥"} グー+${playerFireBoost}`
-                : playerElement === "curse"
+                ? `${playerHP <= 10 ? "🔥🔥 バースト" : "🔥"} グー+${playerFireBoost}`
+                : playerElement === "wind"
+                  ? `🌪️ 風速 ${playerWindSpeed}`
+                  : playerElement === "curse"
                   ? `🕯️ 呪 ${cpuCurseTurns}T ${playerSealPar ? "| ✋封印" : ""}
                      ${playerCurseMaxPower === 2 ? '<div class="curseWarning">⚠️ 最大パワーが2に低下</div>' : ''}`
                   : "効果なし";
@@ -1296,8 +1413,10 @@
             : cpuThunder
               ? `⚡ 雷強化 (${3 - cpuThunderScissors}回)`
               : cpuElement === "fire"
-                ? `${cpuHP <= 5 ? "🔥🔥 バースト" : "🔥"} グー+${cpuFireBoost}`
-                : cpuElement === "curse"
+                ? `${cpuHP <= 10 ? "🔥🔥 バースト" : "🔥"} グー+${cpuFireBoost}`
+                : cpuElement === "wind"
+                  ? `🌪️ 風速 ${cpuWindSpeed}`
+                  : cpuElement === "curse"
                   ? `🕯️ 呪 ${playerCurseTurns}T ${cpuSealPar ? "| ✋封印" : ""}
                      ${cpuCurseMaxPower === 2 ? '<div class="curseWarning">⚠️ 最大パワーが2に低下</div>' : ''}`
                   : "効果なし";
@@ -1392,6 +1511,32 @@
           }
           if(element === "fighter") {
             damage = 7;
+          }
+
+          if(element === "wind") {
+            damage = 5;
+
+            const speed = isPlayer
+              ? playerWindSpeed
+              : cpuWindSpeed;
+
+            if(speed >= 3){
+              damage += 4;
+
+              if(isPlayer){
+                playerWindSpeed = 0;
+              }
+              else {
+                cpuWindSpeed = 0;
+              }
+            }
+
+            if(isPlayer){
+              playerWindSpeed += 2;
+            }
+            else {
+              cpuWindSpeed += 2;
+            }
           }
 
           if(element === "curse") {
@@ -1507,6 +1652,23 @@
       if(hand === 1){
         damage = 4;
 
+        if(element === "wind"){
+          const speed = isPlayer
+            ? playerWindSpeed
+            : cpuWindSpeed;
+
+          if(speed >= 3){
+            damage += 4;
+
+            if(isPlayer){
+              playerWindSpeed = 0;
+            }
+            else {
+              cpuWindSpeed = 0;
+            }
+          }
+        }
+
         if(element === "thunder" && thunder){
           damage += 3;
 
@@ -1533,8 +1695,45 @@
         }
       }
 
+      const lastHand = isPlayer
+        ? playerLastHand
+        : cpuLastHand;
+
+      if(lastHand !== null && lastHand !== hand && element === "wind"){
+        if(isPlayer){
+          playerWindSpeed += 1;
+        }
+        else {
+          cpuWindSpeed += 1;
+        }
+      }
+
+      if(isPlayer){
+        playerLastHand = hand;
+      }
+      else {
+        cpuLastHand = hand;
+      }
+
       if(hand === 2){
         damage = 2;
+
+        if(element === "wind"){
+          const speed = isPlayer
+            ? playerWindSpeed
+            : cpuWindSpeed;
+
+          if(speed >= 3){
+            damage += 4;
+
+            if(isPlayer){
+              playerWindSpeed = 0;
+            }
+            else {
+              cpuWindSpeed = 0;
+            }
+          }
+        }
 
         if(element === "earth"){
           damage += isPlayer ? playerEarthBoost : cpuEarthBoost;
@@ -1576,7 +1775,7 @@
       if(element === "fire"){
         const currentHP = isPlayer ? playerHP : cpuHP;
 
-        if(currentHP <= 5){
+        if(currentHP <= 10){
           damage *= 2;
         }
       }
@@ -1787,6 +1986,45 @@
         reducedDamage = Math.max(c.damage - playerEarthShield,0);
         playerHP -= reducedDamage;
 
+        if(reducedDamage >= 8){
+          document.getElementById("damageEffect").innerHTML = `
+            <div class="damageScreen" style="background:rgba(255,0,0,0.42);"></div>
+            <div class="damageText" style="font-size:180px;color:#facc15;">
+              CRITICAL<br>
+              -${reducedDamage}
+            </div>
+          `;
+
+          document.getElementById("impactFlash").innerHTML = `
+            <div class="impactFlash"></div>
+          `;
+
+          document.getElementById("shockwaveEffect").innerHTML = `
+            <div class="shockwave"></div>
+          `;
+        }
+        else {
+          document.getElementById("damageEffect").innerHTML = `
+            <div class="damageScreen"></div>
+            <div class="damageText">-${reducedDamage}</div>
+          `;
+        }
+
+        document.body.classList.add("damageShake");
+
+        if(reducedDamage >= 8){
+          setTimeout(()=>{
+            document.body.classList.add("damageShake");
+          },120);
+        }
+
+        setTimeout(()=>{
+          document.getElementById("damageEffect").innerHTML = "";
+          document.getElementById("impactFlash").innerHTML = "";
+          document.getElementById("shockwaveEffect").innerHTML = "";
+          document.body.classList.remove("damageShake");
+        },900);
+
         if(cpuElement === "water" && cpuHand === 0 && cpuPower >= 0){
           const healAmount = cpuHP <= 8 ? 4 : 2;
           cpuHP = Math.min(cpuHP + healAmount,30);
@@ -1850,13 +2088,30 @@
       playPonSound();
 
       cutinText.innerHTML = `
-        ポン！！
-        <div class="hands">
-          <div>${hands[cpuHand]}</div>
-          <div>VS</div>
-          <div>${hands[playerHand]}</div>
+        <div style="font-size:58px;margin-bottom:12px;">
+          ポン！！
         </div>
-        <div style="margin-top:20px;">${resultText}</div>
+
+        <div class="handBattle">
+
+          <div class="enemyHandAnim">
+            ${hands[cpuHand]}
+          </div>
+
+          <div class="clashEffect">
+            VS
+          </div>
+
+          <div class="playerHandAnim">
+            ${hands[playerHand]}
+          </div>
+
+        </div>
+
+        <div style="margin-top:10px;font-size:52px;">
+          ${resultText}
+        </div>
+
         <div style="margin-top:16px;font-size:32px;line-height:1.6;">
           ${playerHand===cpuHand ? "ダメージなし" : playerWin ? `🤖 CPU -${reducedDamage}` : `🧍 PLAYER -${reducedDamage}`}
         </div>
@@ -1963,6 +2218,12 @@
 
       playerCursePowerMode = 3;
       cpuCursePowerMode = 3;
+
+      playerWindSpeed = 0;
+      cpuWindSpeed = 0;
+
+      playerLastHand = null;
+      cpuLastHand = null;
 
       playerElement = "";
 
