@@ -17,7 +17,237 @@
       min-height: 100vh;
     }
 
+    body.mobileUI .container {
+      width: 100vw;
+      min-height: 100vh;
+      border-radius: 0;
+      padding: 16px 10px 26px;
+      box-sizing: border-box;
+    }
+
+    body.mobileUI .modeCard {
+      min-width: 100%;
+      min-height: 135px;
+      padding: 12px;
+    }
+
+    body.mobileUI .elementGrid {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    body.mobileUI .elementCard {
+      min-height: 110px;
+      padding: 12px;
+    }
+
+    body.mobileUI .handButton {
+      width: 82px;
+      height: 82px;
+      font-size: 44px;
+    }
+
+    body.mobileUI .vsText {
+      font-size: 42px;
+      letter-spacing: 4px;
+    }
+
+    body.mobileUI .statusRow {
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    body.mobileUI .card {
+      padding: 10px;
+      border-radius: 12px;
+    }
+
+    body.mobileUI .label {
+      font-size: 11px;
+    }
+
+    body.mobileUI .big {
+      font-size: 18px;
+      margin-top: 4px;
+    }
+
+    body.mobileUI #playerEffect,
+    body.mobileUI #cpuEffect {
+      font-size: 10px;
+      line-height: 1.45;
+      margin-top: 4px;
+    }
+
+    body.mobileUI .bar {
+      height: 14px;
+      margin-top: 6px;
+    }
+
+    body.mobileUI .powerText {
+      font-size: 10px;
+    }
+
+    body.mobileUI .buttons {
+      gap: 10px;
+    }
+
+    body.mobileUI button {
+      padding: 12px 16px;
+      font-size: 14px;
+      border-radius: 14px;
+    }
+
+    body.mobileUI .battleArena {
+      padding: 14px;
+      min-height: auto;
+    }
+
+    body.mobileUI .big {
+      font-size: 22px;
+    }
+
+    body.mobileUI .result {
+      font-size: 17px !important;
+      min-height: 64px;
+    }
+
+    body.mobileUI h1 {
+      font-size: clamp(22px,7vw,32px);
+    }
+
+    body.mobileUI .guideBox {
+      width: calc(100vw - 16px) !important;
+      left: 8px !important;
+      bottom: 8px;
+      top: auto !important;
+    }
+
+    body.mobileUI .achievementGrid {
+      grid-template-columns: 1fr;
+    }
+
+    body.mobileUI #shopScreen > div,
+    body.mobileUI #achievementScreen > div,
+    body.mobileUI #guideOverlay > div {
+      padding: 14px;
+      border-radius: 18px;
+    }
+
+    body.mobileUI .modeEmoji {
+      font-size: 34px;
+    }
+
+    body.mobileUI .elementEmoji {
+      font-size: 28px;
+    }
+
     @media (max-width: 768px) {
+    .container {
+      width: 100vw;
+      min-height: 100vh;
+      border-radius: 0;
+      padding: 18px 12px 28px;
+      box-sizing: border-box;
+    }
+
+    .buttons {
+      gap: 10px;
+    }
+
+    .modeCard {
+      min-width: 100%;
+      min-height: 150px;
+      padding: 14px;
+      border-radius: 20px;
+    }
+
+    .modeEmoji {
+      font-size: 38px;
+      margin-bottom: 6px;
+    }
+
+    .modeTitle {
+      font-size: 20px;
+    }
+
+    .modeDesc {
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .elementGrid {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .elementCard {
+      min-height: 120px;
+      padding: 14px;
+      border-radius: 18px;
+    }
+
+    .elementEmoji {
+      font-size: 30px;
+      margin-bottom: 4px;
+    }
+
+    .elementName {
+      font-size: 18px;
+    }
+
+    .elementDesc {
+      font-size: 11px;
+      line-height: 1.45;
+      margin-top: 6px;
+    }
+
+    .handButton {
+      width: 86px;
+      height: 86px;
+      font-size: 48px;
+    }
+
+    .battleArena {
+      padding: 14px;
+      border-radius: 20px;
+      min-height: auto;
+    }
+
+    .vsText {
+      font-size: 42px;
+      letter-spacing: 4px;
+      margin: 10px 0;
+    }
+
+    .statusRow {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .card {
+      padding: 12px;
+      border-radius: 14px;
+    }
+
+    .big {
+      font-size: 22px;
+    }
+
+    .result {
+      font-size: 18px !important;
+      min-height: 70px;
+      line-height: 1.6;
+    }
+
+    h1 {
+      font-size: clamp(24px,7vw,34px);
+      gap: 8px;
+    }
+
+    h2 {
+      font-size: 22px;
+    }
+
     .guideBox {
       left: 8px !important;
       top: auto !important;
@@ -1273,6 +1503,11 @@
 
     <div id="modeScreen">
       <div style="text-align:center;margin-bottom:18px;">
+        <div style="margin-bottom:12px;">
+          <button onclick="toggleMobileUI()" id="mobileUIButton">
+            📱 スマホUI: OFF
+          </button>
+        </div>
         <div style="font-size:18px;font-weight:bold;margin-bottom:12px;">
           🪙 <span id="coinText">0</span>
         </div>
@@ -4004,6 +4239,30 @@
     updateCoinUI();
     renderElementButtons();
     checkAchievements();
+
+    function toggleMobileUI(){
+      document.body.classList.toggle('mobileUI');
+
+      const enabled = document.body.classList.contains('mobileUI');
+
+      localStorage.setItem('mobileUI', enabled ? '1' : '0');
+
+      document.getElementById('mobileUIButton').innerHTML = enabled
+        ? '📱 スマホUI: ON'
+        : '📱 スマホUI: OFF';
+    }
+
+    if(localStorage.getItem('mobileUI') === '1'){
+      document.body.classList.add('mobileUI');
+
+      setTimeout(()=>{
+        const btn = document.getElementById('mobileUIButton');
+
+        if(btn){
+          btn.innerHTML = '📱 スマホUI: ON';
+        }
+      },0);
+    }
 
     connectOnlineServer();
     updateMenuButtons();
