@@ -4009,6 +4009,28 @@
     }
 
     function resetGame(){
+      // 状態完全初期化
+      playerPoison = 0;
+      cpuPoison = 0;
+
+      playerIceDebuff = 0;
+      cpuIceDebuff = 0;
+
+      playerIceShield = 0;
+      cpuIceShield = 0;
+
+      playerFrozenHand = null;
+      cpuFrozenHand = null;
+
+      playerCurseTurns = 0;
+      cpuCurseTurns = 0;
+
+      playerThunderScissors = 0;
+      cpuThunderScissors = 0;
+
+      onlineSelectedHand = null;
+      enemyOnlineHand = null;
+      onlineHandLocked = false;
       if(gameMode === "online"){
         playerElement = playerElement || "";
         cpuElement = cpuElement || "";
