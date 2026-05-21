@@ -35,6 +35,8 @@
     .guideTitle {
       font-size: 18px;
       font-weight: bold;
+      font-size: 15px;
+      letter-spacing: 1px;
       margin-bottom: 10px;
     }
 
@@ -126,6 +128,15 @@
       transition: 0.2s;
     }
 
+    .elementSelected {
+      outline: 4px solid #fde047;
+      transform: scale(1.08);
+      box-shadow: 0 0 25px rgba(253,224,71,0.9);
+      background: linear-gradient(135deg,#f59e0b,#facc15);
+      color: black;
+      font-weight: bold;
+    }
+
     .jackpotToggle {
       position: fixed;
       right: 16px;
@@ -178,6 +189,22 @@
       border-radius: 999px;
       overflow: hidden;
       margin-top: 10px;
+      position: relative;
+    }
+
+    .powerText {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      text-shadow: 0 0 6px rgba(0,0,0,0.9);
+      pointer-events: none;
+      z-index: 2;
     }
 
     .fill {
@@ -423,6 +450,78 @@
         opacity: 0;
       }
     }
+
+    .curseScreen {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at center,
+        rgba(168,85,247,0.25),
+        rgba(0,0,0,0.96));
+      backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 7000;
+      animation: curseFade 1.6s ease-out forwards;
+      pointer-events: none;
+    }
+
+    .curseText {
+      font-size: 88px;
+      font-weight: 900;
+      color: #f0abfc;
+      text-shadow:
+        0 0 10px #fff,
+        0 0 25px #c026d3,
+        0 0 50px #7e22ce,
+        0 0 120px black;
+      animation: curseShake 0.12s infinite alternate;
+      letter-spacing: 8px;
+    }
+
+    .curseSub {
+      margin-top: 20px;
+      font-size: 32px;
+      color: #e879f9;
+      opacity: 0.92;
+      text-shadow: 0 0 16px black;
+    }
+
+    @keyframes curseFade {
+      0% {
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      85% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    @keyframes curseShake {
+      from {
+        transform: translateX(-4px) rotate(-1deg);
+      }
+
+      to {
+        transform: translateX(4px) rotate(1deg);
+      }
+    }
+
+      100% {
+        transform: translateY(-120vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -623,13 +722,13 @@
       <h2 id="elementSelectTitle">PLAYER1 の属性を選択</h2>
 
       <div class="buttons">
-        <button onclick="selectElement('fire')">🔥 炎</button>
-        <button onclick="selectElement('water')">💧 水</button>
-        <button onclick="selectElement('earth')">🪨 土</button>
-        <button onclick="selectElement('thunder')">⚡ 雷</button>
-        <button onclick="selectElement('fighter')">🥊 格闘家</button>
-        <button onclick="selectElement('gambler')">🎲 ギャンブラー</button>
-        <button onclick="selectElement('curse')">🕯️ 呪術</button>
+        <button class="elementButton" onclick="selectElement('fire',this)">🔥 炎</button>
+        <button class="elementButton" onclick="selectElement('water',this)">💧 水</button>
+        <button class="elementButton" onclick="selectElement('earth',this)">🪨 土</button>
+        <button class="elementButton" onclick="selectElement('thunder',this)">⚡ 雷</button>
+        <button class="elementButton" onclick="selectElement('fighter',this)">🥊 格闘家</button>
+        <button class="elementButton" onclick="selectElement('gambler',this)">🎲 ギャンブラー</button>
+        <button class="elementButton" onclick="selectElement('curse',this)">🕯️ 呪術</button>
       </div>
     </div>
 
@@ -660,6 +759,7 @@
           <div id="playerEffect">効果なし</div>
           <div class="bar">
             <div class="fill powerFill" id="playerPowerBar"></div>
+            <div class="powerText" id="playerPowerText">0/3</div>
           </div>
         </div>
 
@@ -669,6 +769,7 @@
           <div id="cpuEffect">効果なし</div>
           <div class="bar">
             <div class="fill powerFill" id="cpuPowerBar"></div>
+            <div class="powerText" id="cpuPowerText">0/3</div>
           </div>
         </div>
       </div>
@@ -702,6 +803,7 @@
   <div id="impactFlash"></div>
   <div id="shockwaveEffect"></div>
   <div id="moneyRainEffect"></div>
+  <div id="curseEffect"></div>
 
   <div class="cutin hidden" id="cutin">
     <div id="cutinText">じゃんけん…！</div>
@@ -1001,7 +1103,14 @@
       document.getElementById("elementScreen").style.display = "block";
     }
 
-    function selectElement(element){
+    function selectElement(element,button){
+      document.querySelectorAll('.elementButton').forEach(btn=>{
+        btn.classList.remove('elementSelected');
+      });
+
+      if(button){
+        button.classList.add('elementSelected');
+      }
       if(gameMode === "online"){
         playerElement = element;
 
@@ -1119,10 +1228,14 @@
           ? cpuCurseMaxPower
           : 3;
 
-      document.getElementById("playerPowerBar").style.width = `${playerPower/playerMaxPower*100}%`;
-      document.getElementById("cpuPowerBar").style.width = `${cpuPower/cpuMaxPower*100}%`;
+      document.getElementById("playerPowerBar").style.width = playerPower <= 0
+        ? "0%"
+        : `${playerPower/playerMaxPower*100}%`;
+      document.getElementById("cpuPowerBar").style.width = cpuPower <= 0
+        ? "0%"
+        : `${cpuPower/cpuMaxPower*100}%`;
 
-      document.getElementById("playerPowerBar").innerHTML = `${playerPower}/${playerMaxPower}`;
+      document.getElementById("playerPowerText").innerHTML = `${playerPower}/${playerMaxPower}`;
 
       if(playerElement === "curse" && playerCurseMaxPower === 2){
         document.getElementById("playerPowerBar").classList.add("curseLimit");
@@ -1130,7 +1243,7 @@
       else {
         document.getElementById("playerPowerBar").classList.remove("curseLimit");
       }
-      document.getElementById("cpuPowerBar").innerHTML = `${cpuPower}/${cpuMaxPower}`;
+      document.getElementById("cpuPowerText").innerHTML = `${cpuPower}/${cpuMaxPower}`;
 
       if(cpuElement === "curse" && cpuCurseMaxPower === 2){
         document.getElementById("cpuPowerBar").classList.add("curseLimit");
@@ -1164,29 +1277,30 @@
       document.getElementById("playerEffect").innerHTML =
         playerElement === "earth"
           ? `🪨 攻+${playerEarthBoost} 防-${playerEarthShield}`
-          :
-        playerEarth ? "🪨 次+2" :
-        playerThunder ? `⚡ 雷強化 (${3 - playerThunderScissors}回)` :
-        playerElement === "fire"
-          ? `${playerHP <= 5 ? "🔥🔥 バースト" : "🔥"} グー+${playerFireBoost}`
-          :
-        playerElement === "curse"
-          ? `🕯️ 呪 ${cpuCurseTurns}T ${playerSealPar ? "| ✋封印" : ""}
-             ${playerCurseMaxPower === 2 ? '<div class="curseWarning">⚠️ 最大パワーが2に低下</div>' : ''}`
-          : cpuElement === "curse"
-          ? `🕯️ 呪 ${playerCurseTurns}T ${cpuSealPar ? "| ✋封印" : ""}
-             ${cpuCurseMaxPower === 2 ? '<div class="curseWarning">⚠️ 最大パワーが2に低下</div>' : ''}`
-          : "効果なし";
+          : playerEarth
+            ? "🪨 次+2"
+            : playerThunder
+              ? `⚡ 雷強化 (${3 - playerThunderScissors}回)`
+              : playerElement === "fire"
+                ? `${playerHP <= 5 ? "🔥🔥 バースト" : "🔥"} グー+${playerFireBoost}`
+                : playerElement === "curse"
+                  ? `🕯️ 呪 ${cpuCurseTurns}T ${playerSealPar ? "| ✋封印" : ""}
+                     ${playerCurseMaxPower === 2 ? '<div class="curseWarning">⚠️ 最大パワーが2に低下</div>' : ''}`
+                  : "効果なし";
+
       document.getElementById("cpuEffect").innerHTML =
         cpuElement === "earth"
           ? `🪨 攻+${cpuEarthBoost} 防-${cpuEarthShield}`
-          :
-        cpuEarth ? "🪨 次+2" :
-        cpuThunder ? `⚡ 雷強化 (${3 - cpuThunderScissors}回)` :
-        cpuElement === "fire"
-          ? `${cpuHP <= 5 ? "🔥🔥 バースト" : "🔥"} グー+${cpuFireBoost}`
-          :
-        "効果なし";
+          : cpuEarth
+            ? "🪨 次+2"
+            : cpuThunder
+              ? `⚡ 雷強化 (${3 - cpuThunderScissors}回)`
+              : cpuElement === "fire"
+                ? `${cpuHP <= 5 ? "🔥🔥 バースト" : "🔥"} グー+${cpuFireBoost}`
+                : cpuElement === "curse"
+                  ? `🕯️ 呪 ${playerCurseTurns}T ${cpuSealPar ? "| ✋封印" : ""}
+                     ${cpuCurseMaxPower === 2 ? '<div class="curseWarning">⚠️ 最大パワーが2に低下</div>' : ''}`
+                  : "効果なし";
     }
 
     function getAttack(hand, element, power, earth, thunder, isPlayer){
@@ -1288,6 +1402,16 @@
               : cpuCursePowerMode;
 
             if(power >= curseCost && curseCost === 3){
+              document.getElementById("curseEffect").innerHTML = `
+                <div class="curseScreen">
+                  <div class="curseText">呪術展開</div>
+                  <div class="curseSub">✋ 封 印 ✋</div>
+                </div>
+              `;
+
+              setTimeout(()=>{
+                document.getElementById("curseEffect").innerHTML = "";
+              },1600);
               newPower -= 3;
 
               if(isPlayer){
@@ -1943,6 +2067,9 @@
         });
 
         socket.on("battleStart",()=>{
+          console.log("battleStart受信");
+
+          // 状態初期化
           playerElement = "";
           cpuElement = "";
 
@@ -1952,16 +2079,27 @@
           playerPower = 0;
           cpuPower = 0;
 
+          // 全画面を一旦閉じる
           document.getElementById("modeScreen").style.display = "none";
           document.getElementById("onlineScreen").style.display = "none";
           document.getElementById("waitingRoom").style.display = "none";
           document.getElementById("gameScreen").style.display = "none";
-          document.getElementById("elementScreen").style.display = "block";
+
+          // 属性画面を強制表示
+          const elementScreen = document.getElementById("elementScreen");
+          elementScreen.style.display = "block";
+          elementScreen.style.visibility = "visible";
+          elementScreen.style.opacity = "1";
 
           document.getElementById("elementSelectTitle").innerHTML = "属性を選択";
           document.getElementById("result").innerHTML = "属性を選択してください";
 
           updateUI();
+
+          // 念のため再描画
+          setTimeout(()=>{
+            elementScreen.style.display = "block";
+          },100);
         });
 
         socket.on("enemySelected",(data)=>{
@@ -1985,4 +2123,3 @@
   </script>
 </body>
 </html>
-

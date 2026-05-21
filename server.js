@@ -13,101 +13,120 @@ const rooms = {};
 
 io.on("connection", (socket) => {
 
-  console.log("接続:", socket.id);
+console.log("接続:", socket.id);
 
-  // ===== ルーム参加 =====
-  socket.on("joinRoom", ({ roomCode, playerName, host }) => {
+// ===== ルーム参加 =====
+socket.on("joinRoom", ({ roomCode, playerName, host }) => {
 
-    socket.join(roomCode);
+socket.join(roomCode);
 
-    if (!rooms[roomCode]) {
-      rooms[roomCode] = {
-        players: [],
-        hands: {},
-        elements: {},
-        names: {}
-      };
-    }
+if (!rooms[roomCode]) {
+  rooms[roomCode] = {
+    players: [],
+    hands: {},
+    elements: {},
+    names: {}
+  };
+}
 
-    rooms[roomCode].players.push(socket.id);
+rooms[roomCode].players.push(socket.id);
 
-    rooms[roomCode].names[socket.id] = playerName;
+rooms[roomCode].names[socket.id] = playerName;
 
-    io.to(roomCode).emit("roomJoined", {
-      room: roomCode,
-      players: rooms[roomCode].players.length
+io.to(roomCode).emit("roomJoined", {
+  room: roomCode,
+  players: rooms[roomCode].players.length
+});
+
+// 相手へ名前送信
+socket.to(roomCode).emit("enemyName", {
+  name: playerName
+});
+
+// 既にいる相手の名前を新規参加者へ送信
+for (const id of rooms[roomCode].players) {
+
+  if (id !== socket.id) {
+
+    socket.emit("enemyName", {
+      name: rooms[roomCode].names[id]
     });
 
-    // 相手へ名前送信
-    socket.to(roomCode).emit("enemyName", {
-      name: playerName
-    });
+  }
+}
 
-    // 既にいる相手の名前を新規参加者へ送信
-    for (const id of rooms[roomCode].players) {
+console.log(socket.id + " joined " + roomCode);
 
-      if (id !== socket.id) {
+});
 
-        socket.emit("enemyName", {
-          name: rooms[roomCode].names[id]
-        });
+// ===== 対戦開始 =====
+socket.on("startBattle", ({ roomCode }) => {
 
-      }
-    }
 
-    console.log(`${socket.id} joined ${roomCode}`);
-  });
+if (!rooms[roomCode]) return;
 
-  // ===== 属性選択 =====
-  socket.on("selectElement", ({ roomCode, element }) => {
+console.log("対戦開始:", roomCode);
 
-    if (!rooms[roomCode]) return;
+io.to(roomCode).emit("battleStart");
 
-    rooms[roomCode].elements[socket.id] = element;
 
-    socket.to(roomCode).emit("enemyElement", {
-      element
-    });
+});
 
-    console.log("属性受信", roomCode, element);
-  });
+// ===== 属性選択 =====
+socket.on("selectElement", ({ roomCode, element }) => {
 
-  // ===== 手選択 =====
-  socket.on("selectHand", ({ roomCode, hand }) => {
 
-    if (!rooms[roomCode]) return;
+if (!rooms[roomCode]) return;
 
-    rooms[roomCode].hands[socket.id] = hand;
+rooms[roomCode].elements[socket.id] = element;
 
-    socket.to(roomCode).emit("enemySelected", {
-      hand
-    });
+socket.to(roomCode).emit("enemyElement", {
+  element
+});
 
-    console.log("手受信", roomCode, hand);
-  });
+console.log("属性受信", roomCode, element);
 
-  // ===== 切断 =====
-  socket.on("disconnect", () => {
 
-    for (const roomCode in rooms) {
+});
 
-      rooms[roomCode].players =
-        rooms[roomCode].players.filter(id => id !== socket.id);
+// ===== 手選択 =====
+socket.on("selectHand", ({ roomCode, hand }) => {
 
-      delete rooms[roomCode].hands[socket.id];
-      delete rooms[roomCode].elements[socket.id];
-      delete rooms[roomCode].names[socket.id];
+if (!rooms[roomCode]) return;
 
-      if (rooms[roomCode].players.length === 0) {
-        delete rooms[roomCode];
-      }
-    }
+rooms[roomCode].hands[socket.id] = hand;
 
-    console.log("切断:", socket.id);
-  });
+socket.to(roomCode).emit("enemySelected", {
+  hand
+});
+
+console.log("手受信", roomCode, hand);
+
+});
+
+// ===== 切断 =====
+socket.on("disconnect", () => {
+
+for (const roomCode in rooms) {
+
+  rooms[roomCode].players =
+    rooms[roomCode].players.filter(id => id !== socket.id);
+
+  delete rooms[roomCode].hands[socket.id];
+  delete rooms[roomCode].elements[socket.id];
+  delete rooms[roomCode].names[socket.id];
+
+  if (rooms[roomCode].players.length === 0) {
+    delete rooms[roomCode];
+  }
+}
+
+console.log("切断:", socket.id);
+
+});
 
 });
 
 server.listen(3000, () => {
-  console.log("サーバー起動 http://localhost:3000");
+console.log("サーバー起動 http://localhost:3000");
 });
