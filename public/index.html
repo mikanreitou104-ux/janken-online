@@ -1843,6 +1843,13 @@
     let playerCursePowerMode = 3;
     let cpuCursePowerMode = 3;
 
+    let playerPoison = 0;
+   let cpuPoison = 0;
+    let playerPoisonTurn = 0;
+   let cpuPoisonTurn = 0;
+
+  
+
     let coins = Number(localStorage.getItem("coins") || 0);
 
     let ownedSkins = JSON.parse(localStorage.getItem("ownedSkins") || '["default"]');
@@ -2098,10 +2105,7 @@
         visible:index === 0
       };
     });
-
-    let playerPoison = 0;
-    let cpuPoison = 0;
-
+    
     let playerWindSpeed = 0;
     let playerIceDebuff = 0;
     let cpuIceDebuff = 0;
@@ -2858,7 +2862,7 @@
 
       // BGM停止中
 
-      if(playerElement === "fire" && playerHP <= 10){
+      if(playerElement === "fire" && playerHP <= 15){
         stats.fireBurst += 1;
         checkAchievements();
         let flames = "";
@@ -2970,7 +2974,7 @@
 
       if(element === "fire"){
         return `🔥 グー:${8 + fireBoost}ダメ ${fireBoost > 0 ? `| 強化+${fireBoost}` : ''}<br>
-        ${isPlayer ? playerHP : cpuHP}HP ${((isPlayer ? playerHP : cpuHP) <= 10) ? '| 🔥バースト中' : ''}`;
+        ${isPlayer ? playerHP : cpuHP}HP ${((isPlayer ? playerHP : cpuHP) <= 15) ? '| 🔥バースト中' : ''}`;
       }
 
       if(element === "water"){
@@ -3003,7 +3007,7 @@
 
       if(element === "wind"){
         return `🌪️ 風速:${wind}<br>
-        ${wind >= 3 ? '⚔️ 次攻撃+4' : '手変更で加速'}`;
+        ${wind >= 3 ? '⚔️ 次攻撃+7' : '手変更で加速'}`;
       }
 
       if(element === "ice"){
@@ -3022,9 +3026,11 @@
 
       if(element === "poison"){
         const poison = isPlayer ? cpuPoison : playerPoison;
+        const poisonturnui = isPlayer ? cpuPoisonTurn : playerPoisonTurn; 
 
         return `☣️ 相手毒:${poison}<br>
-        ターン終了時に継続ダメ`;
+        ターン終了時に継続ダメ
+        残り:${poisonturnui}ターン`;
       }
 
       if(element === "vampire"){
@@ -3178,7 +3184,7 @@
               : cpuWindSpeed;
 
             if(speed >= 3){
-              damage += 4;
+              damage += 7;
 
               if(isPlayer){
                 stats.windAttack += 1;
@@ -3352,7 +3358,7 @@
             : cpuWindSpeed;
 
           if(speed >= 3){
-            damage += 4;
+            damage += 7;
 
             if(isPlayer){
               playerWindSpeed = 0;
@@ -3426,7 +3432,7 @@
             : cpuWindSpeed;
 
           if(speed >= 3){
-            damage += 4;
+            damage += 7;
 
             if(isPlayer){
               playerWindSpeed = 0;
@@ -3808,24 +3814,37 @@
         resultText = "YOU LOSE";
       }
 
+
       if(playerElement === "poison" && playerWin){
         cpuPoison += 1;
+        cpuPoisonTurn = 3; //2ターン持続
       }
 
       if(cpuElement === "poison" && !playerWin && playerHand !== cpuHand){
         playerPoison += 1;
+        playerPoisonTurn = 3;
       }
 
-      if(playerPoison > 0){
+      if(playerPoisonTurn > 0){
         playerHP -= playerPoison;
+        playerPoisonTurn--;
+
+        if(playerPoisonTurn <= 0){
+          playerPoison = 0; //毒解除
+        }
 
         if(playerHP <= 0 && cpuElement === "poison"){
           stats.poisonWins += 1;
         }
       }
 
-      if(cpuPoison > 0){
+      if(cpuPoisonTurn > 0){
         cpuHP -= cpuPoison;
+        cpuPoisonTurn--;
+
+        if(cpuPoisonTurn <=0) {
+          cpuPoison = 0;
+        }
 
         if(cpuHP <= 0 && playerElement === "poison"){
           stats.poisonWins += 1;
