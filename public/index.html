@@ -1235,6 +1235,20 @@
         transform: translateX(4px) rotate(1deg);
       }
     }
+    /* Roguelike upgrade modal styles */
+#upgradeScreen { display:none; }
+.upgradeChoice {
+  flex:1;
+  min-width:200px;
+  padding:12px;
+  border-radius:10px;
+  background:linear-gradient(135deg,#222,#111);
+  color:#fff;
+  border:1px solid rgba(255,255,255,0.06);
+  cursor:pointer;
+}
+.upgradeChoice:hover { transform:translateY(-4px); transition:transform .12s; }
+
   </style>
 </head>
 <body>
@@ -1522,14 +1536,6 @@
       <h2>モード選択</h2>
 
       <div class="buttons">
-        <button class="modeCard" onclick="selectMode('cpu')">
-          <div class="modeGlow cpuGlow"></div>
-          <div class="modeEmoji">🤖</div>
-          <div class="modeTitle">CPU戦</div>
-          <div class="modeDesc">
-            AIとの真剣勝負
-          </div>
-        </button>
 
         <button class="modeCard" onclick="selectMode('friend')">
           <div class="modeGlow friendGlow"></div>
@@ -1548,8 +1554,16 @@
             合言葉で友達と対戦
           </div>
         </button>
-        
-      </div>
+
+        <button class="modeCard" onclick="roguelike=true;startRoguelike()">
+          <div class ="modeGlow RoguelikeGlow" ></div>
+          <div class="modeEmoji">🎲</div>
+          <div class="modeTitle">ローグライクモード</div>
+          <div class ="modeDesc">
+            カードを集めて強くなれ！
+          </div>
+        </button>
+      </div>    
     </div>
 
     <button
@@ -1796,6 +1810,7 @@
       vampire:"🩸 吸血"
     };
 
+    let roguelike = false;
     let playerElement = "";
     let cpuElement = ["fire","water","earth","thunder"][Math.floor(Math.random()*4)];
     let friendElement2 = "";
@@ -2773,6 +2788,11 @@
       document.getElementById("onlineScreen").style.display = "none";
       document.getElementById("waitingRoom").style.display = "none";
       document.getElementById("elementScreen").style.display = "block";
+      
+     if(roguelikeRunActive){
+     generateRoguelikeEnemy();
+     }
+
     }
 
     function selectElement(element,button){
@@ -3037,7 +3057,7 @@
         const hp = isPlayer ? playerHP : cpuHP;
 
         return `🩸 与ダメの半分回復<br>
-        ${hp <= 10 ? '⚔️ 全攻撃+2' : '通常状態'}`;
+        ${hp <= 10 ? '⚔️' : '通常状態'}`;
       }
 
       return "効果なし";
@@ -3336,7 +3356,7 @@
         damage = 4;
 
         if(element === "vampire"){
-          damage += ((isPlayer ? playerHP : cpuHP) <= 10 ? 2 : 0);
+          damage += ((isPlayer ? playerHP : cpuHP) <= 10 ? 0 : 0);
         }
 
         if(element === "ice"){
@@ -3817,12 +3837,12 @@
 
       if(playerElement === "poison" && playerWin){
         cpuPoison += 1;
-        cpuPoisonTurn = 3; //2ターン持続
+        cpuPoisonTurn = 2; //2ターン持続
       }
 
       if(cpuElement === "poison" && !playerWin && playerHand !== cpuHand){
         playerPoison += 1;
-        playerPoisonTurn = 3;
+        playerPoisonTurn = 2;
       }
 
       if(playerPoisonTurn > 0){
@@ -3970,6 +3990,11 @@
       `;
 
       if(cpuHP<=0){
+        if (roguelikeRunActive && roguelike === true) {
+          stats.roguelikeWins += 1;
+          showUpgradeChoices();
+          return;
+        }
         stats.winStreak += 1;
         if(gameMode === "cpu"){
           stats.cpuWins += 1;
@@ -4219,7 +4244,9 @@
           if(playerElement !== ""){
             document.getElementById("elementScreen").style.display = "none";
             document.getElementById("gameScreen").style.display = "block";
-
+            if (roguelikeRunActive && roguelike === true) {
+              generateRoguelikeEnemy();
+              }
             updateUI();
           }
         });
@@ -4308,5 +4335,130 @@
     connectOnlineServer();
     updateMenuButtons();
   </script>
+
+ <!-- Roguelike Upgrade Modal -->
+<div id="upgradeScreen" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;">
+  <div style="margin:auto;max-width:820px;width:92%;background:rgba(0,0,0,0.75);padding:18px;border-radius:14px;color:#fff;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="margin:0;">🏷️ 強化を1つ選んでください</h3>
+      <button onclick="closeUpgradeScreen()" style="background:transparent;border:1px solid #fff;color:#fff;padding:6px 10px;border-radius:8px;">キャンセル</button>
+    </div>
+    <div id="upgradeChoices" style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;"></div>
+  </div>
+</div>
+ <script>
+// ===== Roguelike state =====
+let roguelikeRunActive = false;
+let currentFloor = 0;
+let maxFloors = 10;
+let playerUpgrades = [];
+let currentUpgradeChoices = [];
+
+// ===== Start roguelike run =====
+function startRoguelike(){
+  roguelikeRunActive = true;
+  roguelike = true;
+  currentFloor = 1;
+  playerUpgrades = [];
+
+  // ラン専用初期化（既存のグローバル変数を上書き）
+  playerHP = 30;
+  playerPower = 0;
+  playerPoison = 0;
+  playerPoisonTurn = 0;
+  playerCurseTurns = 0;
+  playerSealPar = false;
+  playerSealTurns = 0;
+
+  // UI 切替
+  document.getElementById("modeScreen").style.display = "none";
+  document.getElementById("elementScreen").style.display = "block";
+  document.getElementById("elementSelectTitle").innerText = `ローグライク ${currentFloor}階 属性を選択`;
+  renderElementButtons();
+  updateUI();
+}
+
+// ===== Enemy generator for roguelike =====
+function generateRoguelikeEnemy(){
+  cpuHP = Math.min(30 + currentFloor * 2, 200);
+  cpuPower = 0;
+  const pool = (unlockedElements && unlockedElements.length) ? unlockedElements : ['fire','water','earth','thunder'];
+  cpuElement = pool[Math.floor(Math.random()*pool.length)];
+  if(document.getElementById("enemyNameLabel")){
+    document.getElementById("enemyNameLabel").innerText = `敵（${currentFloor}階） HP`;
+  }
+  if(document.getElementById("enemyElementLabel")){
+    document.getElementById("enemyElementLabel").innerText = elementNames[cpuElement];
+  }
+  updateUI();
+}
+
+// ===== Upgrade choices UI =====
+function showUpgradeChoices(){
+  currentUpgradeChoices = getUpgradeChoices();
+  const container = document.getElementById("upgradeChoices");
+  container.innerHTML = "";
+  currentUpgradeChoices.forEach((choice, i) => {
+    const btn = document.createElement("button");
+    btn.className = "upgradeChoice";
+    btn.innerHTML = `<div style="font-weight:bold;font-size:16px;">${choice.name}</div><div style="opacity:0.85;margin-top:6px;font-size:13px;">${choice.desc}</div>`;
+    btn.onclick = () => chooseUpgrade(i);
+    container.appendChild(btn);
+  });
+  document.getElementById("upgradeScreen").style.display = "flex";
+}
+
+function getUpgradeChoices(){
+  const pool = [
+    { id:'hp+5', name:'HP +5', desc:'即時回復 +5', apply:()=>{ playerHP = Math.min(playerHP + 5, 30); } },
+    { id:'maxhp+3', name:'最大HP +3', desc:'最大HP相当を増やす（即時回復で代替）', apply:()=>{ playerHP = Math.min(playerHP + 3, 50); } },
+    { id:'atk+1', name:'攻撃 +1', desc:'全ダメージに +1', apply:()=>{ playerUpgrades.push('atk+1'); } },
+    { id:'power+1', name:'開始パワー +1', desc:'次戦開始時のパワーを +1', apply:()=>{ playerPower = Math.min(playerPower + 1, 4); } },
+    { id:'heal3', name:'即時回復 +3', desc:'即時HP回復 +3', apply:()=>{ playerHP = Math.min(playerHP + 3, 30); } },
+    { id:'earthBoost', name:'土の強化', desc:'土属性の攻撃を強化（ラン中）', apply:()=>{ playerEarthBoost += 1; } }
+  ];
+  const copy = pool.slice();
+  const choices = [];
+  for(let i=0;i<3;i++){
+    const idx = Math.floor(Math.random()*copy.length);
+    choices.push(copy.splice(idx,1)[0]);
+  }
+  return choices;
+}
+
+function chooseUpgrade(index){
+  const choice = currentUpgradeChoices[index];
+  if(!choice) return;
+  try { choice.apply(); } catch(e){ console.error("apply upgrade error", e); }
+  playerUpgrades.push(choice.id || choice.name);
+  closeUpgradeScreen();
+  nextFloor();
+}
+
+function closeUpgradeScreen(){
+  document.getElementById("upgradeScreen").style.display = "none";
+  document.getElementById("upgradeChoices").innerHTML = "";
+}
+
+function nextFloor(){
+  if(currentFloor >= maxFloors){ endRoguelike(true); return; }
+  currentFloor++;
+  document.getElementById("elementSelectTitle").innerText = `ローグライク ${currentFloor}階 属性を選択`;
+  document.getElementById("elementScreen").style.display = "block";
+  document.getElementById("gameScreen").style.display = "none";
+  generateRoguelikeEnemy();
+}
+
+function endRoguelike(cleared){
+  roguelikeRunActive = false;
+  const reward = Math.floor(currentFloor * 20);
+  coins += reward;
+  saveData();
+  updateCoinUI();
+  document.getElementById("result").innerHTML = cleared ? `ローグライククリア！ ${reward} COIN 獲得` : `ラン終了。${reward} COIN 獲得`;
+  returnToModeSelect();
+}
+</script>
+
 </body>
 </html>
